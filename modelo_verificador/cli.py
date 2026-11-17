@@ -1,6 +1,6 @@
 """Interfaz de línea de comandos.
 
-  modelo-verificador verificar <modelo_dir> [--modulos formato,coherencia,faltantes] [--completo] [-o salida.json]
+  modelo-verificador verificar <modelo_dir> [--modulos formato,coherencia,faltantes] [--fase registro|diagnostico|implementacion] [--completo] [-o salida.json]
   modelo-verificador codificar <bd.xlsx> <config.json> <modelo_dir> [--bd-salida X.xlsx] [--escribir-en staging_dir] [-o asignaciones.json]
   modelo-verificador id <codigo> [--capa CERAMICAS]
   modelo-verificador dominio <capa> <campo>
@@ -32,6 +32,8 @@ def main(argv=None):
     v.add_argument("--modulos", default="formato,coherencia,faltantes")
     v.add_argument("--completo", action="store_true", help="Incluye la lista completa de hallazgos")
     v.add_argument("--ejemplos", type=int, default=5)
+    v.add_argument("--fase", choices=["registro", "diagnostico", "implementacion"],
+                   help="Revisa solo lo que se entrega en esa fase del PAP")
     v.add_argument("-o", "--salida")
 
     c = sp.add_parser("codificar", help="Lee una BD de materiales y asigna códigos del Modelo")
@@ -56,7 +58,7 @@ def main(argv=None):
         web_main(a.puerto, not a.no_abrir)
         return 0
     if a.cmd == "verificar":
-        res = verificar_todo(a.modelo, tuple(a.modulos.split(",")), a.completo, a.ejemplos)
+        res = verificar_todo(a.modelo, tuple(a.modulos.split(",")), a.completo, a.ejemplos, a.fase)
         _out(res, a.salida)
         if a.salida:
             print(json.dumps(dict(conteo=res["conteo"], apto=res["apto"]), ensure_ascii=False))

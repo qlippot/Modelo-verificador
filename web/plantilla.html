@@ -3,233 +3,299 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Modelo-verificador ICANH</title>
+<title>Autoverificador</title>
+<meta name="description" content="Verificación del Modelo de Datos Geográfico ICANH V4 para programas de arqueología preventiva. Sin IA: los archivos no salen de su equipo.">
 <script>/*MV_CONFIG*/</script>
 <style>
 :root{
-  --bg:#f6f5f2; --panel:#ffffff; --panel-2:#f0eee9; --line:#dedad2; --text:#1f1d1a; --muted:#6b665d;
-  --accent:#8a4b20; --accent-2:#a85e2c; --accent-soft:#f3e6db;
-  --err:#b42318; --err-soft:#fde8e6; --warn:#9a6700; --warn-soft:#fdf3d8; --info:#2f5f8f; --info-soft:#e4eef8;
-  --ok:#1e7a46; --ok-soft:#e2f3e8; --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
-  --radius:10px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#ffffff; --bg-2:#f6f8fa; --line:#d1d9e0; --line-2:#e8ecf0; --text:#1f2328; --muted:#59636e;
+  --btn:#1f2328; --btn-text:#ffffff; --btn-hover:#32383f; --focus:#0969da;
+  --err:#d1242f; --err-soft:#ffebe9; --warn:#9a6700; --warn-soft:#fff8c5; --info:#0969da; --info-soft:#ddf4ff;
+  --ok:#1a7f37; --ok-soft:#dafbe1;
+  --radius:12px; --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#171614; --panel:#201f1c; --panel-2:#2a2825; --line:#3a3733; --text:#ece8e1; --muted:#a39d92;
-  --accent:#e0965e; --accent-2:#f0a873; --accent-soft:#3a2a1e;
-  --err:#ff8a7a; --err-soft:#3d1f1b; --warn:#f2c14e; --warn-soft:#3a3016; --info:#8cb8e6; --info-soft:#1d2b3a;
-  --ok:#6fd39a; --ok-soft:#173326; --shadow:none;
+  --bg:#0d1117; --bg-2:#151b23; --line:#3d444d; --line-2:#262c36; --text:#f0f6fc; --muted:#9198a1;
+  --btn:#f0f6fc; --btn-text:#0d1117; --btn-hover:#d1d9e0; --focus:#4493f8;
+  --err:#ff7b72; --err-soft:#3c1618; --warn:#d29922; --warn-soft:#3a2d12; --info:#58a6ff; --info-soft:#12263f;
+  --ok:#3fb950; --ok-soft:#12301b;
 }}
 :root[data-theme="dark"]{
-  --bg:#171614; --panel:#201f1c; --panel-2:#2a2825; --line:#3a3733; --text:#ece8e1; --muted:#a39d92;
-  --accent:#e0965e; --accent-2:#f0a873; --accent-soft:#3a2a1e;
-  --err:#ff8a7a; --err-soft:#3d1f1b; --warn:#f2c14e; --warn-soft:#3a3016; --info:#8cb8e6; --info-soft:#1d2b3a;
-  --ok:#6fd39a; --ok-soft:#173326; --shadow:none;
+  --bg:#0d1117; --bg-2:#151b23; --line:#3d444d; --line-2:#262c36; --text:#f0f6fc; --muted:#9198a1;
+  --btn:#f0f6fc; --btn-text:#0d1117; --btn-hover:#d1d9e0; --focus:#4493f8;
+  --err:#ff7b72; --err-soft:#3c1618; --warn:#d29922; --warn-soft:#3a2d12; --info:#58a6ff; --info-soft:#12263f;
+  --ok:#3fb950; --ok-soft:#12301b;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--panel)}
-header h1{font-size:18px;margin:0;font-weight:650;letter-spacing:-.01em}
-header h1 small{display:block;font-size:12.5px;font-weight:400;color:var(--muted)}
-.motor{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:5px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
-.punto{width:8px;height:8px;border-radius:50%;background:var(--warn)}
-.punto.listo{background:var(--ok)} .punto.error{background:var(--err)}
-main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
-nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 18px;overflow-x:auto}
-nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font:inherit;color:var(--muted);cursor:pointer;white-space:nowrap}
-nav.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:16px}
-.panel h2{font-size:15px;margin:0 0 10px;font-weight:650}
-.panel h3{font-size:14px;margin:16px 0 8px;font-weight:600}
-.fila{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.ayuda{color:var(--muted);font-size:13.5px;margin:4px 0 10px}
-button.btn,label.btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
-button.btn:hover,label.btn:hover{border-color:var(--accent)}
-button.primario{background:var(--accent);border-color:var(--accent);color:#fff}
-:root[data-theme="dark"] button.primario{color:#1b130c}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primario{color:#1b130c}}
-button.primario:hover{background:var(--accent-2)}
-button:disabled{opacity:.5;cursor:progress}
-input[type=file]{display:none}
-input[type=text],select,textarea{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text)}
-textarea{width:100%;min-height:260px;font-family:var(--mono);font-size:12.5px;line-height:1.45;resize:vertical}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;user-select:none}
-.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
-.fuente{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
-.fuente code,.mono{font-family:var(--mono);font-size:12.5px}
-.vacio{color:var(--muted);font-style:italic}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:4px 0 14px}
-.kpi{border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;background:var(--panel)}
-.kpi b{display:block;font-size:26px;font-weight:650;line-height:1.15;font-variant-numeric:tabular-nums}
-.kpi span{font-size:12.5px;color:var(--muted)}
-.kpi.err b{color:var(--err)} .kpi.warn b{color:var(--warn)} .kpi.info b{color:var(--info)} .kpi.ok b{color:var(--ok)}
-.estado-apto{display:inline-block;font-weight:600;padding:4px 12px;border-radius:999px}
-.estado-apto.si{background:var(--ok-soft);color:var(--ok)} .estado-apto.no{background:var(--err-soft);color:var(--err)}
-.nivel{display:inline-block;font-size:11.5px;font-weight:650;letter-spacing:.03em;padding:2px 8px;border-radius:6px}
-.nivel.ERROR{background:var(--err-soft);color:var(--err)} .nivel.AVISO{background:var(--warn-soft);color:var(--warn)} .nivel.INFO{background:var(--info-soft);color:var(--info)}
-.tabla{width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:600;background:var(--panel-2);font-size:12.5px;color:var(--muted);position:sticky;top:0}
-tr:last-child td{border-bottom:0}
-td.num{text-align:right;font-variant-numeric:tabular-nums}
-details summary{cursor:pointer}
-details ul{margin:6px 0 2px 18px;padding:0;font-family:var(--mono);font-size:12px;color:var(--muted)}
-.estado-fila{font-size:12px;font-weight:600}
-.estado-fila.ok{color:var(--ok)} .estado-fila.sin_resolver{color:var(--err)}
-.aviso-caja{border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
-.error-caja{border-left:3px solid var(--err);background:var(--err-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
-.ok-caja{border-left:3px solid var(--ok);background:var(--ok-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
 .oculto{display:none!important}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media (max-width:820px){.grid2{grid-template-columns:1fr}}
-.hojas{display:grid;gap:10px}
-.hoja{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
-.hoja .cols{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
-.hoja .cols span{font-size:12px;font-family:var(--mono);background:var(--panel-2);padding:1px 7px;border-radius:5px}
-#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:min(640px,calc(100% - 32px));z-index:10}
-.cargando{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:g .8s linear infinite;vertical-align:-2px}
+a{color:inherit}
+.enlace{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px}
+.enlace:hover{color:var(--text)}
+.mono{font-family:var(--mono);font-size:12.5px}
+
+/* ---------- botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--bg-2)}
+.btn.primario{background:var(--btn);border-color:var(--btn);color:var(--btn-text)}
+.btn.primario:hover{background:var(--btn-hover)}
+.btn:disabled{opacity:.55;cursor:progress}
+.icono{background:none;border:0;padding:6px;border-radius:8px;cursor:pointer;color:var(--muted);line-height:0}
+.icono:hover{background:var(--bg-2);color:var(--text)}
+.cargando{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:g .8s linear infinite}
 @keyframes g{to{transform:rotate(360deg)}}
-.valores{columns:3 220px;font-size:13px;margin:6px 0 0;padding-left:18px}
-footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px}
+
+/* ---------- selector de fase */
+.fases{display:inline-flex;gap:2px;padding:3px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:11px}
+.fases button{border:0;background:none;padding:6px 12px;border-radius:8px;font-size:13.5px;color:var(--muted);cursor:pointer}
+.fases button[aria-checked="true"]{background:var(--bg);color:var(--text);font-weight:600;box-shadow:0 1px 2px rgba(31,35,40,.12),0 0 0 1px var(--line-2)}
+
+/* ---------- 1. portada */
+#portada{min-height:100%;display:flex;flex-direction:column}
+.barra-portada{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:16px 24px;font-size:14px}
+.heroe{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px 48px}
+.marca{width:76px;height:76px;margin-bottom:22px;color:var(--text)}
+.heroe h1{font-size:clamp(44px,8vw,84px);line-height:1.02;letter-spacing:-.035em;font-weight:650;margin:0}
+.heroe h1 sup{font-size:.22em;letter-spacing:0;font-weight:500;color:var(--muted);vertical-align:top;margin-left:4px;position:relative;top:.7em}
+.heroe .lema{font-size:clamp(16px,2.2vw,20px);color:var(--muted);margin:14px 0 34px;max-width:620px}
+.zona{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 28px 20px;border:1px dashed transparent;border-radius:18px;transition:border-color .15s,background .15s}
+.zona.arrastrando{border-color:var(--focus);background:var(--info-soft)}
+.subir{font-size:17px;font-weight:600;padding:14px 40px;border-radius:12px}
+.seguro{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.estado-motor{font-size:13px;color:var(--muted);min-height:20px;display:flex;align-items:center;gap:8px}
+.pie-portada{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;font-size:14px;color:var(--muted)}
+
+/* ---------- 2. resultados */
+#app{max-width:1240px;margin:0 auto;padding:0 16px 64px}
+.barra{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.barra .nombre{display:flex;align-items:center;gap:10px;font-weight:650;font-size:16px;background:none;border:0;cursor:pointer;padding:0}
+.barra .nombre svg{width:28px;height:28px}
+.barra .der{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.modelo-actual{font-size:13.5px;color:var(--muted);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cuerpo{display:grid;grid-template-columns:320px 1fr;gap:32px;padding-top:28px;align-items:start}
+@media (max-width:860px){.cuerpo{grid-template-columns:1fr;gap:20px}}
+.lateral{display:flex;flex-direction:column;gap:18px;position:sticky;top:76px}
+@media (max-width:860px){.lateral{position:static;order:2}.barra{position:static}}
+.tarjeta{border:1px solid var(--line-2);border-radius:var(--radius);padding:18px}
+.tarjeta h2{font-size:15px;margin:0 0 4px;font-weight:650}
+.tarjeta p{margin:0;color:var(--muted);font-size:14px}
+.revisa{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px;font-size:14px}
+.revisa li{display:flex;gap:10px;align-items:baseline}
+.revisa li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--muted);transform:translateY(-2px)}
+.revisa b{font-weight:600}
+.archivos{display:grid;gap:6px;margin:12px 0;font-size:13.5px}
+.archivo{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.archivo.listo{color:var(--text)}
+.archivo .dot{width:8px;height:8px}
+details.avanzado{margin-top:12px;font-size:13.5px}
+details.avanzado summary{cursor:pointer;color:var(--muted)}
+details.avanzado textarea{width:100%;min-height:220px;margin-top:8px;font-family:var(--mono);font-size:12px;line-height:1.45;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);resize:vertical}
+
+.vistas{display:flex;gap:4px;margin-bottom:18px}
+.vistas button{border:0;background:none;padding:6px 12px;border-radius:8px;font-size:14px;color:var(--muted);cursor:pointer}
+.vistas button[aria-selected="true"]{background:var(--bg-2);color:var(--text);font-weight:600}
+.resumen{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.resumen h2{margin:0;font-size:22px;letter-spacing:-.015em;font-weight:650;display:flex;align-items:center;gap:10px}
+.resumen .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* lista estilo GitHub */
+.lista{list-style:none;margin:0;padding:0;border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden}
+.lista + .lista{margin-top:14px}
+.lista-titulo{font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:22px 0 8px}
+.item{border-top:1px solid var(--line-2)}
+.item:first-child{border-top:0}
+.item-cab{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;padding:12px 16px;cursor:pointer}
+.item-cab:hover{background:var(--bg-2)}
+.item-cab[aria-expanded="true"]{background:var(--bg-2)}
+.item-txt{flex:1;min-width:0}
+.item-txt b{display:block;font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
+.item-txt small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.dot.ERROR,.dot.no{background:var(--err)} .dot.AVISO{background:var(--warn)} .dot.INFO{background:var(--info)} .dot.ok,.dot.si{background:var(--ok)}
+.tag{flex:none;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px}
+.tag.ERROR,.tag.no{background:var(--err-soft);color:var(--err)} .tag.AVISO{background:var(--warn-soft);color:var(--warn)}
+.tag.INFO{background:var(--info-soft);color:var(--info)} .tag.ok,.tag.si{background:var(--ok-soft);color:var(--ok)}
+.item-det{padding:2px 16px 16px 38px;font-size:14px}
+.item-det p{margin:0 0 10px;max-width:72ch}
+.casos{margin:0;padding:0;list-style:none;font-family:var(--mono);font-size:12.5px;color:var(--muted);display:grid;gap:3px}
+.casos li{overflow-wrap:anywhere}
+.mas{background:none;border:0;padding:12px 16px;width:100%;text-align:left;color:var(--muted);font-size:13.5px;cursor:pointer;border-top:1px solid var(--line-2)}
+.mas:hover{color:var(--text);background:var(--bg-2)}
+.vacio{padding:28px 16px;text-align:center;color:var(--muted)}
+.apto{display:flex;flex-direction:column;align-items:center;gap:6px;padding:40px 16px;text-align:center;border:1px solid var(--line-2);border-radius:var(--radius)}
+.apto svg{width:44px;height:44px;color:var(--ok)}
+.apto b{font-size:18px}
+.esperando{display:flex;align-items:center;gap:10px;color:var(--muted);padding:40px 0;justify-content:center}
+
+/* ---------- diálogos */
+dialog{border:1px solid var(--line);border-radius:16px;padding:0;max-width:min(640px,calc(100% - 32px));width:100%;background:var(--bg);color:var(--text);box-shadow:0 12px 48px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(1,4,9,.45)}
+.dlg-cab{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.dlg-cab h2{margin:0;font-size:17px}
+.dlg-cuerpo{padding:18px 20px 22px;max-height:70vh;overflow:auto;font-size:14.5px}
+.dlg-cuerpo ol{padding-left:20px;margin:0;display:grid;gap:12px}
+.dlg-cuerpo h3{font-size:14px;margin:20px 0 8px}
+.dlg-cuerpo input,.dlg-cuerpo select{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+.fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.caja{border-radius:8px;padding:8px 12px;font-size:13.5px;margin:10px 0}
+.caja.ok{background:var(--ok-soft);color:var(--ok)} .caja.no{background:var(--err-soft);color:var(--err)}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100% - 32px));z-index:20}
+#toast div{background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+input[type=file]{display:none}
 </style>
 </head>
 <body>
-<header>
-  <h1>Modelo-verificador ICANH V4<small>Verificación y codificación del Modelo de Datos Geográfico · sin IA</small></h1>
-  <div class="fila">
-    <span class="motor" id="motor"><span class="punto" id="motor-punto"></span><span id="motor-texto">Iniciando…</span></span>
-    <button class="btn" id="btn-ejemplo" disabled>Cargar datos de ejemplo</button>
-    <button class="btn" id="btn-tema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+
+<!-- Marca: armadillo (original, no es logotipo institucional) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="armadillo" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 40c0-11 9-19 20-19s19 8 19 19z"/>
+      <path d="M25 23.5c1.8 5 2.4 10.5 2.4 16.5M32 21.2c1 6 1.2 12.5 1.2 18.8M38.5 21.3c-.6 6-.8 12.5-.8 18.7M45 23.8c-1.4 5-2 10.4-2 16.2"/>
+      <path d="M17 32.5 3.5 40.5 15 40"/>
+      <path d="M16.5 32.5l-.8-5 3.4 3.2"/>
+      <path d="M54 37c4 .5 7 3.5 8.5 8"/>
+      <path d="M21 40v5.5M47 40v5.5"/>
+    </g>
+    <circle cx="12" cy="36.2" r="1.3" fill="currentColor"/>
+  </symbol>
+  <symbol id="candado" viewBox="0 0 16 16"><path fill="currentColor" d="M4 7V5a4 4 0 1 1 8 0v2h.5A1.5 1.5 0 0 1 14 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5v-5A1.5 1.5 0 0 1 3.5 7zm1.5 0h5V5a2.5 2.5 0 0 0-5 0z"/></symbol>
+  <symbol id="tema" viewBox="0 0 16 16"><path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1m0 1.5v11a5.5 5.5 0 0 1 0-11"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6.5"/></g></symbol>
+</svg>
+
+<!-- ============================================================ 1. PORTADA -->
+<section id="portada">
+  <div class="barra-portada">
+    <a id="enlace-externo" class="enlace oculto" target="_blank" rel="noopener"></a>
+    <button class="icono" data-tema title="Cambiar tema" aria-label="Cambiar tema"><svg width="18" height="18"><use href="#tema"/></svg></button>
   </div>
-</header>
-
-<main>
-  <section class="panel">
-    <h2>Modelo de Datos</h2>
-    <p class="ayuda">Elija la carpeta raíz del Modelo (la que contiene «Documentación Actividades Arqueológicas», «Metadato», «Raster»…). Los archivos se procesan en este equipo<span id="ayuda-motor"></span>.</p>
-    <div class="fuente">
-      <label class="btn" for="in-modelo">Elegir carpeta del Modelo…</label>
+  <div class="heroe">
+    <svg class="marca" aria-hidden="true"><use href="#armadillo"/></svg>
+    <h1>Autoverificador<sup>v1.1</sup></h1>
+    <p class="lema">Apoyo para programas de arqueología preventiva: revise su Modelo de Datos ICANH antes de entregarlo.</p>
+    <div class="zona" id="zona">
+      <div class="fases" role="radiogroup" aria-label="Fase del programa">
+        <button role="radio" data-fase="registro">Registro</button>
+        <button role="radio" data-fase="diagnostico">Diagnóstico</button>
+        <button role="radio" data-fase="implementacion">Implementación</button>
+      </div>
+      <label class="btn primario subir" for="in-modelo" id="btn-subir">Subir carpeta del Modelo</label>
       <input type="file" id="in-modelo" webkitdirectory directory multiple>
-      <span id="modelo-actual" class="vacio">Ningún Modelo elegido</span>
-      <span id="modelo-ejemplos" class="fila oculto"></span>
+      <span class="seguro"><svg width="13" height="13"><use href="#candado"/></svg>Sin IA · sus datos no salen de este equipo</span>
+      <span class="estado-motor" id="estado-portada"></span>
     </div>
-  </section>
+  </div>
+  <div class="pie-portada">
+    <button class="enlace" data-guia>¿No sabe cómo usarlo? Guía</button>
+    <button class="enlace" data-herramientas>Herramientas de códigos</button>
+  </div>
+</section>
 
-  <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="verificar">1 · Verificar Modelo</button>
-    <button role="tab" aria-selected="false" data-tab="codificar">2 · Codificar BD</button>
-    <button role="tab" aria-selected="false" data-tab="ids">IDs y catálogo</button>
-  </nav>
+<!-- ============================================================ 2–3. RESULTADOS -->
+<div id="app" class="oculto">
+  <div class="barra">
+    <button class="nombre" id="ir-portada" title="Volver al inicio"><svg aria-hidden="true"><use href="#armadillo"/></svg>Autoverificador</button>
+    <div class="fases" role="radiogroup" aria-label="Fase del programa">
+      <button role="radio" data-fase="registro">Registro</button>
+      <button role="radio" data-fase="diagnostico">Diagnóstico</button>
+      <button role="radio" data-fase="implementacion">Implementación</button>
+    </div>
+    <div class="der">
+      <span class="modelo-actual" id="modelo-actual"></span>
+      <label class="btn" for="in-modelo">Subir otro</label>
+      <button class="icono" data-tema title="Cambiar tema" aria-label="Cambiar tema"><svg width="18" height="18"><use href="#tema"/></svg></button>
+    </div>
+  </div>
 
-  <!-- ===================================================== VERIFICAR -->
-  <section id="tab-verificar">
-    <div class="panel">
-      <div class="fila">
-        <span class="chip" role="button" aria-pressed="true" data-mod="formato">Formato</span>
-        <span class="chip" role="button" aria-pressed="true" data-mod="coherencia">Coherencia</span>
-        <span class="chip" role="button" aria-pressed="true" data-mod="faltantes">Faltantes</span>
-        <button class="btn primario" id="btn-verificar" disabled>Verificar</button>
+  <div class="cuerpo">
+    <aside class="lateral">
+      <div class="tarjeta">
+        <h2>Qué se revisa</h2>
+        <p id="fase-desc"></p>
+        <ul class="revisa">
+          <li><span><b>Formato:</b> campos, dominios y códigos frente al catálogo V4.</span></li>
+          <li><span><b>Coherencia:</b> geometrías, vínculos, fechas y ortoplanos.</span></li>
+          <li><span><b>Faltantes:</b> datos obligatorios sin diligenciar.</span></li>
+          <li><span><b>Fase:</b> que el Modelo corresponda a la fase elegida.</span></li>
+        </ul>
       </div>
-      <p class="ayuda">Formato: estructura frente a la plantilla V4, dominios, IDs y longitudes. Coherencia: geometría, vínculos, fechas, ortoplanos y Metadato. Faltantes: información que no existe.</p>
-    </div>
-    <div id="ver-resultado" class="oculto">
-      <div class="panel">
-        <div class="fila" style="justify-content:space-between">
-          <h2 style="margin:0">Resultado <span id="ver-apto" class="estado-apto"></span></h2>
-          <div class="fila"><button class="btn" id="btn-ver-json">Descargar JSON</button><button class="btn" id="btn-ver-csv">Descargar CSV</button></div>
+      <div class="tarjeta">
+        <h2>Codificar materiales</h2>
+        <p>Agregue los códigos del Modelo a su base de datos de materiales.</p>
+        <div class="archivos">
+          <span class="archivo" id="f-bd"><span class="dot"></span><span>Base de datos (.xlsx)</span></span>
+          <span class="archivo" id="f-config"><span class="dot"></span><span>Configuración (.json)</span></span>
         </div>
-        <div class="kpis" id="ver-kpis" style="margin-top:12px"></div>
-        <div class="fila" style="margin-bottom:10px">
-          <span class="chip" role="button" aria-pressed="true" data-niv="ERROR">ERROR</span>
-          <span class="chip" role="button" aria-pressed="true" data-niv="AVISO">AVISO</span>
-          <span class="chip" role="button" aria-pressed="false" data-niv="INFO">INFO</span>
-          <input type="text" id="ver-buscar" placeholder="Buscar capa, regla o detalle…" style="flex:1;min-width:200px">
-        </div>
-        <div class="tabla"><table><thead><tr><th>Nivel</th><th>Módulo</th><th>Capa</th><th>Regla y casos</th><th class="num">N</th></tr></thead><tbody id="ver-filas"></tbody></table></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================== CODIFICAR -->
-  <section id="tab-codificar" class="oculto">
-    <div class="grid2">
-      <div class="panel">
-        <h2>Base de datos de materiales</h2>
-        <div class="fuente">
-          <label class="btn" for="in-bd">Elegir BD (.xlsx)…</label>
-          <input type="file" id="in-bd" accept=".xlsx">
-          <span id="bd-actual" class="vacio">Ninguna BD elegida</span>
-        </div>
-        <div class="fila" style="margin-top:10px"><button class="btn" id="btn-inspeccionar" disabled>Ver hojas y columnas</button></div>
-        <div id="bd-hojas" class="hojas" style="margin-top:10px"></div>
-      </div>
-      <div class="panel">
-        <h2>Configuración</h2>
-        <p class="ayuda">Correspondencia de actividades, unidades y mapeo de columnas a campos DBF.</p>
-        <div class="fila" style="margin-bottom:8px">
-          <label class="btn" for="in-config">Abrir .json…</label>
-          <input type="file" id="in-config" accept=".json,application/json">
-          <button class="btn" id="btn-config-ejemplo" disabled>Usar ejemplo</button>
-          <button class="btn" id="btn-config-guardar">Guardar .json</button>
-          <button class="btn" id="btn-validar" disabled>Validar</button>
-        </div>
-        <textarea id="config" spellcheck="false" placeholder='{ "actividades": {...}, "hojas": {...} }'></textarea>
-        <div id="config-resultado"></div>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="fila">
-        <label class="fila" style="gap:6px;font-size:14px"><input type="checkbox" id="cod-escribir" checked> Generar también una copia del Modelo con los materiales (.zip)</label>
-        <button class="btn primario" id="btn-codificar" disabled>Codificar</button>
-      </div>
-      <p class="ayuda">Nunca se modifican los archivos elegidos: se descarga una BD codificada (copia con columnas de códigos) y, si se marca, una copia del Modelo.</p>
-    </div>
-    <div id="cod-resultado" class="oculto">
-      <div class="panel">
-        <div class="fila" style="justify-content:space-between">
-          <h2 style="margin:0">Resultado de la codificación</h2>
-          <div class="fila" id="cod-descargas"></div>
-        </div>
-        <div class="kpis" id="cod-kpis" style="margin-top:12px"></div>
-        <div id="cod-avisos"></div>
-        <h3>Asignaciones por fila</h3>
-        <div class="fila" style="margin-bottom:8px">
-          <select id="cod-filtro"><option value="">Todas</option><option value="ok">Codificadas</option><option value="sin_resolver">Sin resolver</option></select>
-          <input type="text" id="cod-buscar" placeholder="Buscar ID, actividad, nota…" style="flex:1;min-width:200px">
-        </div>
-        <div class="tabla" style="max-height:460px"><table><thead><tr><th>Hoja · fila</th><th>ID BD</th><th>Estado</th><th>ID_ACT_ARQ</th><th>ID_UNI_EX</th><th>ID(s) Modelo</th><th>Notas</th></tr></thead><tbody id="cod-filas"></tbody></table></div>
-        <h3>Unidades nuevas</h3>
-        <div class="tabla"><table><thead><tr><th>ID</th><th>Tipo</th><th>Descripción</th></tr></thead><tbody id="cod-unidades"></tbody></table></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================================================== IDs -->
-  <section id="tab-ids" class="oculto">
-    <div class="grid2">
-      <div class="panel">
-        <h2>Analizar un código</h2>
-        <div class="fila"><input type="text" id="id-codigo" class="mono" placeholder="R0125A220005PI00001C0001" style="flex:1;min-width:220px"><button class="btn primario" id="btn-analizar" disabled>Analizar</button></div>
-        <div id="id-resultado" style="margin-top:10px"></div>
-        <h2 style="margin-top:22px">Siguiente código libre en el Modelo</h2>
         <div class="fila">
-          <select id="sig-tipo"><option value="actividad">Actividad</option><option value="unidad">Unidad mínima</option><option value="material">Material</option><option value="zonificacion">Zonificación</option><option value="poligono">Polígono específico</option></select>
-          <select id="sig-fase"><option value="PI">PI · Implementación</option><option value="DI">DI · Aprobación PMA</option></select>
-          <select id="sig-capa" class="oculto"></select>
+          <label class="btn" for="in-bd">Subir</label>
+          <input type="file" id="in-bd" accept=".xlsx,.json,application/json" multiple>
+          <button class="btn primario oculto" id="btn-codificar">Codificar</button>
         </div>
-        <div class="fila" style="margin-top:8px"><input type="text" id="sig-base" class="mono" placeholder="Base: R0125A220005" style="flex:1;min-width:220px"><button class="btn" id="btn-siguiente" disabled>Calcular</button></div>
-        <div id="sig-resultado" style="margin-top:10px"></div>
+        <details class="avanzado">
+          <summary>Ver o editar la configuración</summary>
+          <textarea id="config" spellcheck="false" placeholder='{ "actividades": {...}, "hojas": {...} }'></textarea>
+          <div class="fila" style="margin-top:8px">
+            <button class="btn" id="btn-config-guardar">Descargar .json</button>
+          </div>
+        </details>
       </div>
-      <div class="panel">
-        <h2>Catálogo V4</h2>
-        <div class="fila"><select id="cat-capa" style="flex:1"></select></div>
-        <div id="cat-campos" style="margin-top:10px"></div>
+    </aside>
+
+    <section>
+      <div class="vistas oculto" id="vistas" role="tablist">
+        <button role="tab" data-vista="verificacion" aria-selected="true">Verificación</button>
+        <button role="tab" data-vista="codificacion" aria-selected="false">Codificación</button>
       </div>
+      <div id="vista-verificacion"></div>
+      <div id="vista-codificacion" class="oculto"></div>
+    </section>
+  </div>
+</div>
+
+<!-- ============================================================ diálogos -->
+<dialog id="dlg-guia">
+  <div class="dlg-cab"><h2>Cómo usarlo</h2><button class="icono" data-cerrar aria-label="Cerrar">✕</button></div>
+  <div class="dlg-cuerpo">
+    <ol>
+      <li><b>Elija la fase</b> del programa: Registro, Diagnóstico o Implementación. Solo se revisa lo que se entrega en esa fase.</li>
+      <li><b>Suba la carpeta raíz del Modelo</b>, la que contiene «Zona de Estudio», «Documentación Actividades Arqueológicas», «Metadato», «Raster»… También puede arrastrarla sobre el botón.</li>
+      <li><b>Lea el resultado.</b> Primero los errores (impiden la entrega), luego los avisos (conviene revisarlos). Haga clic en cualquiera para ver qué significa, cómo corregirlo y los casos exactos.</li>
+      <li><b>Opcional: codifique materiales.</b> Suba su base de datos de materiales (.xlsx) y su configuración (.json). Recibirá una copia de la BD con los códigos y una copia del Modelo con los materiales. Sus archivos originales nunca se modifican.</li>
+    </ol>
+    <h3>Privacidad</h3>
+    <p style="margin:0;color:var(--muted)">Todo se procesa en este equipo<span id="guia-motor"></span>. No hay inteligencia artificial ni servidores intermedios.</p>
+  </div>
+</dialog>
+
+<dialog id="dlg-herramientas">
+  <div class="dlg-cab"><h2>Herramientas de códigos</h2><button class="icono" data-cerrar aria-label="Cerrar">✕</button></div>
+  <div class="dlg-cuerpo">
+    <h3 style="margin-top:0">Analizar un código</h3>
+    <div class="fila"><input type="text" id="id-codigo" class="mono" placeholder="R0000A000001PI00001C0001" style="flex:1;min-width:220px"><button class="btn primario" id="btn-analizar">Analizar</button></div>
+    <div id="id-resultado"></div>
+    <h3>Siguiente código libre en el Modelo</h3>
+    <div class="fila">
+      <select id="sig-tipo"><option value="actividad">Actividad</option><option value="unidad">Unidad mínima</option><option value="material">Material</option><option value="zonificacion">Zonificación</option><option value="poligono">Polígono específico</option></select>
+      <select id="sig-fase"><option value="PI">PI · Implementación</option><option value="DI">DI · Diagnóstico</option></select>
+      <select id="sig-capa" class="oculto"></select>
     </div>
-  </section>
-  <footer>Modelo-verificador · el catálogo de objetos ICANH manda · los datos no salen de este equipo</footer>
-</main>
-<div id="toast"></div>
+    <div class="fila" style="margin-top:8px"><input type="text" id="sig-base" class="mono" placeholder="Base: polígono específico (12)" style="flex:1;min-width:220px"><button class="btn" id="btn-siguiente">Calcular</button></div>
+    <div id="sig-resultado"></div>
+    <h3>Catálogo V4</h3>
+    <select id="cat-capa" style="width:100%"></select>
+    <div id="cat-campos" style="margin-top:10px"></div>
+  </div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script type="text/js-worker" id="mv-worker">
 /* Motor en navegador: Pyodide en un Web Worker (no bloquea la página). */
@@ -240,12 +306,11 @@ self.onmessage = async (e) => {
   try {
     let r = null, transfer = [];
     if (tipo === "iniciar") {
-      post({ tipo: "progreso", texto: "Descargando Python (Pyodide)…" });
+      post({ tipo: "progreso", texto: "Descargando Python…" });
       importScripts(datos.indexURL + "pyodide.js");
       py = await loadPyodide({ indexURL: datos.indexURL });
-      post({ tipo: "progreso", texto: "Cargando shapely, pyshp, xlrd…" });
+      post({ tipo: "progreso", texto: "Cargando librerías geográficas…" });
       await py.loadPackage(["micropip", "shapely", "pyshp", "xlrd"]);
-      post({ tipo: "progreso", texto: "Instalando openpyxl…" });
       await py.pyimport("micropip").install(["openpyxl"]);
       post({ tipo: "progreso", texto: "Preparando el verificador…" });
       py.unpackArchive(datos.paquete, "zip", { extractDir: "/app" });
@@ -274,20 +339,24 @@ self.onmessage = async (e) => {
 
 <script>
 "use strict";
+/* Enlace opcional arriba a la derecha (p. ej. la página de su organización). Vacío = oculto. */
+const ENLACE_EXTERNO = { texto: "", url: "" };
+
 const MV = window.MV || { modo: "local" };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const estado = { modelo: null, bd: null, verificacion: null, codificacion: null, listo: false, ejemplo: false };
+const plural = (n, s, p) => `${n} ${n === 1 ? s : (p || s + "s")}`;
+const FASES = {
+  registro: "Registro: polígono general y polígonos específicos (Zona de Estudio).",
+  diagnostico: "Diagnóstico y prospección: Zona de Estudio, Zonificación y documentación de actividades y materiales.",
+  implementacion: "Implementación del PMA: el Modelo completo, con PMA aprobado.",
+};
+const estado = { fase: "implementacion", modelo: null, etiqueta: "", bd: null, config: null, ver: null, cod: null, vista: "verificacion" };
 
-/* ------------------------------------------------------------ motores */
+/* ------------------------------------------------------------ motores (local / navegador) */
 const MotorLocal = {
-  nombre: "Local · Python",
-  async iniciar() {
-    const r = await this.llamar("listar_capas", {});
-    if (!r.ok) throw new Error(r.error);
-    return "Python en este equipo";
-  },
+  async iniciar() { const r = await this.llamar("listar_capas", {}); if (!r.ok) throw new Error(r.error); return "por el programa local (127.0.0.1)"; },
   h(extra) { return Object.assign({ "X-MV-Token": MV.token }, extra || {}); },
   async escribir(ruta, blob) {
     const r = await fetch("/api/archivo?ruta=" + encodeURIComponent(ruta), { method: "PUT", headers: this.h(), body: blob });
@@ -304,9 +373,7 @@ const MotorLocal = {
     return r.blob();
   },
 };
-
 const MotorNavegador = {
-  nombre: "Navegador · Pyodide",
   w: null, seq: 0, pend: new Map(),
   enviar(tipo, datos, transfer) {
     return new Promise((res, rej) => { const id = ++this.seq; this.pend.set(id, { res, rej }); this.w.postMessage({ id, tipo, datos }, transfer || []); });
@@ -320,301 +387,305 @@ const MotorNavegador = {
       const p = this.pend.get(m.id); if (!p) return; this.pend.delete(m.id);
       m.ok ? p.res(m.r) : p.rej(new Error(m.error));
     };
-    const b64 = $("#mv-paquete").textContent.trim();
-    const bin = atob(b64), bytes = new Uint8Array(bin.length);
+    const bin = atob($("#mv-paquete").textContent.trim()), bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const r = await this.enviar("iniciar", { indexURL: MV.pyodide, paquete: bytes.buffer }, [bytes.buffer]);
-    return "Python " + r.python + " en el navegador";
+    await this.enviar("iniciar", { indexURL: MV.pyodide, paquete: bytes.buffer }, [bytes.buffer]);
+    return "dentro de este navegador";
   },
   async escribir(ruta, blob) { const b = await blob.arrayBuffer(); await this.enviar("escribir", { ruta, bytes: b }, [b]); },
   async llamar(nombre, argumentos) { return this.enviar("llamar", { nombre, argumentos: JSON.stringify(argumentos || {}) }); },
   async leer(ruta) { return new Blob([await this.enviar("leer", { ruta })]); },
 };
 const motor = MV.modo === "navegador" ? MotorNavegador : MotorLocal;
+let progresoMotor = "Preparando…";
+const listo = motor.iniciar((t) => { progresoMotor = t; pintarEspera(); });
+listo.then((d) => { $("#guia-motor").textContent = ", " + d; }, () => {});
 
 async function servicio(nombre, argumentos) {
+  await listo;
   const r = await motor.llamar(nombre, argumentos || {});
   if (!r.ok) throw new Error(r.error);
   return r.resultado;
 }
 
-/* ------------------------------------------------------------ utilidades de UI */
-function toast(html, tipo = "error", ms = 6000) {
-  const t = $("#toast");
-  t.innerHTML = `<div class="${tipo}-caja" style="box-shadow:0 4px 16px rgba(0,0,0,.15)">${html}</div>`;
-  clearTimeout(toast._t); toast._t = setTimeout(() => (t.innerHTML = ""), ms);
+/* ------------------------------------------------------------ utilidades */
+function toast(texto, ms = 6000) {
+  $("#toast").innerHTML = `<div>${esc(texto)}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => ($("#toast").innerHTML = ""), ms);
 }
 async function ocupado(btn, fn) {
-  const txt = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="cargando"></span> ${txt}`;
-  try { return await fn(); } catch (e) { toast(esc(e.message || e)); console.error(e); } finally { btn.disabled = false; btn.innerHTML = txt; actualizarBotones(); }
+  const txt = btn ? btn.innerHTML : ""; if (btn) { btn.disabled = true; btn.innerHTML = `<span class="cargando"></span> ${txt}`; }
+  try { return await fn(); } catch (e) { toast(e.message || String(e), 9000); console.error(e); }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = txt; } }
 }
 function descargar(blob, nombre) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
-function kpi(valor, etiqueta, clase = "") { return `<div class="kpi ${clase}"><b>${esc(valor)}</b><span>${esc(etiqueta)}</span></div>`; }
-function actualizarBotones() {
-  const l = estado.listo;
-  $("#btn-verificar").disabled = !(l && estado.modelo);
-  $("#btn-inspeccionar").disabled = !(l && estado.bd);
-  $("#btn-validar").disabled = !l;
-  $("#btn-codificar").disabled = !(l && estado.modelo && estado.bd);
-  $("#btn-analizar").disabled = !l;
-  $("#btn-siguiente").disabled = !(l && estado.modelo);
-  $("#btn-ejemplo").disabled = !l;
-  $("#btn-config-ejemplo").disabled = !l;
+const ETIQ = { ERROR: "Error", AVISO: "Aviso", INFO: "Nota" };
+function item({ clase, titulo, sub, tag, ayuda, casos, total }) {
+  const det = ayuda || (casos && casos.length);
+  const resto = total && casos ? total - casos.length : 0;
+  return `<li class="item"><button class="item-cab" ${det ? 'aria-expanded="false"' : "disabled style=cursor:default"}>
+      <span class="dot ${clase}"></span><span class="item-txt"><b>${esc(titulo)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</span>
+      ${tag ? `<span class="tag ${clase}">${esc(tag)}</span>` : ""}</button>
+    ${det ? `<div class="item-det" hidden>${ayuda ? `<p>${esc(ayuda)}</p>` : ""}${casos && casos.length ? `<ul class="casos">${casos.map((c) => `<li>${esc(c) || "—"}</li>`).join("")}${resto > 0 ? `<li>… y ${resto} más</li>` : ""}</ul>` : ""}</div>` : ""}</li>`;
 }
-function setModelo(ruta, etiqueta) {
-  estado.modelo = ruta;
-  $("#modelo-actual").className = "";
-  $("#modelo-actual").innerHTML = `<b>${esc(etiqueta)}</b> <code>${esc(ruta)}</code>`;
-  $$("#modelo-ejemplos .chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.ruta === ruta)));
-  actualizarBotones();
-}
+document.addEventListener("click", (e) => {
+  const cab = e.target.closest(".item-cab[aria-expanded]");
+  if (cab) { const ab = cab.getAttribute("aria-expanded") !== "true"; cab.setAttribute("aria-expanded", ab); cab.nextElementSibling.hidden = !ab; }
+  const mas = e.target.closest(".mas[data-lista]");
+  if (mas) { $(`#${mas.dataset.lista}`).classList.remove("oculto"); mas.remove(); }
+});
 
-/* ------------------------------------------------------------ tema y pestañas */
-$("#btn-tema").onclick = () => {
+/* ------------------------------------------------------------ tema, fase, navegación */
+$$("[data-tema]").forEach((b) => (b.onclick = () => {
   const r = document.documentElement, oscuro = matchMedia("(prefers-color-scheme: dark)").matches;
-  const actual = r.dataset.theme || (oscuro ? "dark" : "light");
-  r.dataset.theme = actual === "dark" ? "light" : "dark";
+  r.dataset.theme = (r.dataset.theme || (oscuro ? "dark" : "light")) === "dark" ? "light" : "dark";
   try { localStorage.setItem("mv-tema", r.dataset.theme); } catch (_) {}
-};
-try { const t = localStorage.getItem("mv-tema"); if (t) document.documentElement.dataset.theme = t; } catch (_) {}
-$$("nav.tabs button").forEach((b) => (b.onclick = () => irA(b.dataset.tab)));
-function irA(tab) {
-  $$("nav.tabs button").forEach((x) => x.setAttribute("aria-selected", String(x.dataset.tab === tab)));
-  ["verificar", "codificar", "ids"].forEach((t) => $("#tab-" + t).classList.toggle("oculto", t !== tab));
-  if (tab === "ids") cargarCatalogo();
-}
-$$(".chip[data-mod], .chip[data-niv]").forEach((c) => (c.onclick = () => {
-  c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed") !== "true"));
-  if (c.dataset.niv) pintarVerificacion();
 }));
+try { const t = localStorage.getItem("mv-tema"); if (t) document.documentElement.dataset.theme = t; } catch (_) {}
+try { const f = localStorage.getItem("mv-fase"); if (FASES[f]) estado.fase = f; } catch (_) {}
+function pintarFase() {
+  $$("[data-fase]").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.fase === estado.fase)));
+  $("#fase-desc").textContent = FASES[estado.fase];
+}
+$$("[data-fase]").forEach((b) => (b.onclick = () => {
+  if (estado.fase === b.dataset.fase) return;
+  estado.fase = b.dataset.fase; pintarFase();
+  try { localStorage.setItem("mv-fase", estado.fase); } catch (_) {}
+  if (estado.modelo) verificar();
+}));
+pintarFase();
+if (ENLACE_EXTERNO.url) { const a = $("#enlace-externo"); a.href = ENLACE_EXTERNO.url; a.textContent = ENLACE_EXTERNO.texto || ENLACE_EXTERNO.url; a.classList.remove("oculto"); }
+$("#ir-portada").onclick = () => { $("#app").classList.add("oculto"); $("#portada").classList.remove("oculto"); };
+function abrirApp() { $("#portada").classList.add("oculto"); $("#app").classList.remove("oculto"); window.scrollTo(0, 0); }
+$$("[data-guia]").forEach((b) => (b.onclick = () => $("#dlg-guia").showModal()));
+$$("[data-herramientas]").forEach((b) => (b.onclick = () => { $("#dlg-herramientas").showModal(); cargarCatalogo(); }));
+$$("dialog [data-cerrar]").forEach((b) => (b.onclick = () => b.closest("dialog").close()));
+$$("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
+$$("[data-vista]").forEach((b) => (b.onclick = () => irVista(b.dataset.vista)));
+function irVista(v) {
+  estado.vista = v;
+  $$("[data-vista]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.vista === v)));
+  $("#vista-verificacion").classList.toggle("oculto", v !== "verificacion");
+  $("#vista-codificacion").classList.toggle("oculto", v !== "codificacion");
+}
 
-/* ------------------------------------------------------------ carga de archivos */
-$("#in-modelo").onchange = async (e) => {
-  const files = Array.from(e.target.files).filter((f) => !/(^|\/)\.DS_Store$/.test(f.webkitRelativePath));
-  if (!files.length) return;
-  const raiz = files[0].webkitRelativePath.split("/")[0];
-  const lbl = $("label[for=in-modelo]");
-  await ocupado(lbl, async () => {
+/* ------------------------------------------------------------ subir el Modelo (botón o arrastrar) */
+async function subirModelo(lista) {          // lista: [[ruta relativa dentro del Modelo, File]]
+  lista = lista.filter(([r]) => !/(^|\/)(\.DS_Store|Thumbs\.db|~\$[^/]*)$/.test(r));
+  if (!lista.length) return;
+  abrirApp();
+  estado.ver = null; estado.cod = null; $("#vistas").classList.add("oculto"); irVista("verificacion");
+  const total = lista.length;
+  let n = 0;
+  const pinta = () => pintarEspera(`Copiando ${n} de ${total} archivos…`);
+  pinta();
+  await ocupado(null, async () => {
     await servicio("borrar", { ruta: "modelo" });
-    let n = 0;
-    for (const f of files) {
-      const rel = f.webkitRelativePath.split("/").slice(1).join("/");
-      await motor.escribir("modelo/" + rel, f);
-      if (++n % 25 === 0) lbl.innerHTML = `<span class="cargando"></span> Copiando ${n}/${files.length}…`;
-    }
-    setModelo("modelo", raiz + ` · ${files.length} archivos`);
+    for (const [rel, f] of lista) { await motor.escribir("modelo/" + rel, f); if (++n % 20 === 0) pinta(); }
+    estado.modelo = "modelo";
+    $("#modelo-actual").textContent = estado.etiqueta + " · " + plural(total, "archivo");
+    await verificar();
   });
+}
+$("#in-modelo").onchange = (e) => {
+  const fs = Array.from(e.target.files);
+  if (fs.length) {
+    estado.etiqueta = fs[0].webkitRelativePath.split("/")[0];
+    subirModelo(fs.map((f) => [f.webkitRelativePath.split("/").slice(1).join("/"), f]));
+  }
   e.target.value = "";
 };
-$("#in-bd").onchange = async (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  await ocupado($("label[for=in-bd]"), async () => {
-    await servicio("borrar", { ruta: "bd" });
-    await motor.escribir("bd/" + f.name, f);
-    estado.bd = "bd/" + f.name;
-    $("#bd-actual").className = ""; $("#bd-actual").innerHTML = `<b>${esc(f.name)}</b>`;
-    $("#bd-hojas").innerHTML = "";
+async function leerEntrada(entrada, ruta, out) {
+  if (entrada.isFile) { out.push([ruta + entrada.name, await new Promise((res, rej) => entrada.file(res, rej))]); return; }
+  const lector = entrada.createReader(); let lote;
+  do { lote = await new Promise((res, rej) => lector.readEntries(res, rej)); for (const x of lote) await leerEntrada(x, ruta + entrada.name + "/", out); } while (lote.length);
+}
+const zona = $("#zona");
+["dragenter", "dragover"].forEach((t) => zona.addEventListener(t, (e) => { e.preventDefault(); zona.classList.add("arrastrando"); }));
+["dragleave", "drop"].forEach((t) => zona.addEventListener(t, () => zona.classList.remove("arrastrando")));
+zona.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const entradas = Array.from(e.dataTransfer.items || []).map((i) => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  if (!entradas.length) return;
+  const out = [];
+  for (const en of entradas) await leerEntrada(en, "", out);
+  if (entradas.length === 1 && entradas[0].isDirectory) {   // se soltó la carpeta raíz: quitar su nombre
+    estado.etiqueta = entradas[0].name;
+    out.forEach((x) => (x[0] = x[0].split("/").slice(1).join("/")));
+  } else estado.etiqueta = "Modelo";
+  subirModelo(out);
+});
+
+/* ------------------------------------------------------------ verificación */
+function pintarEspera(texto) {
+  const t = texto || (pintarEspera.ultimo ?? "");
+  pintarEspera.ultimo = t;
+  const motorTxt = !estado.listo ? ` <span style="opacity:.75">· ${esc(progresoMotor)} (solo la primera vez)</span>` : "";
+  if (!$("#app").classList.contains("oculto") && !estado.ver && t)
+    $("#vista-verificacion").innerHTML = `<div class="esperando"><span class="cargando"></span>${esc(t)}${motorTxt}</div>`;
+  $("#estado-portada").innerHTML = estado.listo ? "" : `<span class="cargando" style="width:11px;height:11px"></span>${esc(progresoMotor)}`;
+}
+listo.then(() => { estado.listo = true; pintarEspera(); }, (e) => {
+  $("#estado-portada").textContent = "No se pudo iniciar el verificador: " + (e.message || e);
+  toast("No se pudo iniciar el verificador: " + (e.message || e), 20000);
+});
+estado.listo = false; pintarEspera();
+
+async function verificar() {
+  estado.ver = null;
+  pintarEspera("Verificando…");
+  await ocupado(null, async () => {
+    estado.ver = await servicio("verificar_modelo", { ruta_modelo: estado.modelo, fase: estado.fase, ejemplos: 200 });
+    pintarVerificacion();
   });
-  e.target.value = "";
-};
-$("#in-config").onchange = async (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  $("#config").value = await f.text(); $("#config-resultado").innerHTML = ""; e.target.value = "";
-};
-
-$("#btn-ejemplo").onclick = (e) => ocupado(e.currentTarget, async () => {
-  const r = await servicio("cargar_ejemplo", { destino: "ejemplo" });
-  const cont = $("#modelo-ejemplos"); cont.classList.remove("oculto");
-  cont.innerHTML = "<span class='ayuda' style='margin:0'>Ejemplos:</span>" + r.modelos.map((m) => `<span class="chip" role="button" data-ruta="ejemplo/${esc(m)}">${esc(m)}</span>`).join("");
-  $$("#modelo-ejemplos .chip").forEach((c) => (c.onclick = () => setModelo(c.dataset.ruta, "Ejemplo sintético")));
-  setModelo("ejemplo/modelo_con_errores", "Ejemplo sintético");
-  estado.bd = "ejemplo/" + r.bd; $("#bd-actual").className = ""; $("#bd-actual").innerHTML = `<b>${esc(r.bd)}</b> (sintética)`;
-  $("#config").value = await (await motor.leer("ejemplo/" + r.config)).text();
-  toast("Datos sintéticos cargados: dos Modelos (correcto y con errores), una BD y su configuración.", "ok", 4000);
-});
-
-/* ------------------------------------------------------------ 1. verificar */
-$("#btn-verificar").onclick = (e) => ocupado(e.currentTarget, async () => {
-  const modulos = $$(".chip[data-mod]").filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.mod);
-  if (!modulos.length) throw new Error("Elija al menos un módulo");
-  const t0 = performance.now();
-  estado.verificacion = await servicio("verificar_modelo", { ruta_modelo: estado.modelo, modulos, completo: true, ejemplos: 3 });
-  estado.verificacion._ms = Math.round(performance.now() - t0);
-  pintarVerificacion();
-});
-$("#ver-buscar").oninput = () => pintarVerificacion();
-function hallazgos() {
-  const v = estado.verificacion; if (!v) return [];
-  return Object.entries(v.modulos).flatMap(([m, inf]) => (inf.hallazgos || []).map((h) => Object.assign({ modulo: m }, h)));
 }
 function pintarVerificacion() {
-  const v = estado.verificacion; if (!v) return;
-  $("#ver-resultado").classList.remove("oculto");
-  const c = v.conteo;
-  $("#ver-apto").className = "estado-apto " + (v.apto ? "si" : "no");
-  $("#ver-apto").textContent = v.apto ? "Apto: 0 errores" : "No apto";
-  $("#ver-kpis").innerHTML = kpi(c.ERROR || 0, "Errores", "err") + kpi(c.AVISO || 0, "Avisos", "warn") + kpi(c.INFO || 0, "Información", "info")
-    + kpi(v.capas.length, "Capas presentes") + kpi((v._ms / 1000).toFixed(1) + " s", motor.nombre);
-  const niv = $$(".chip[data-niv]").filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.niv);
-  const q = $("#ver-buscar").value.trim().toLowerCase();
-  const grupos = new Map();
-  for (const h of hallazgos()) {
-    if (!niv.includes(h.nivel)) continue;
-    if (q && !`${h.capa} ${h.regla} ${h.detalle} ${h.modulo}`.toLowerCase().includes(q)) continue;
-    const k = [h.nivel, h.modulo, h.capa, h.regla].join("|");
-    if (!grupos.has(k)) grupos.set(k, Object.assign({ detalles: [] }, h));
-    grupos.get(k).detalles.push(h.detalle);
-  }
-  const orden = { ERROR: 0, AVISO: 1, INFO: 2 };
-  const filas = [...grupos.values()].sort((a, b) => orden[a.nivel] - orden[b.nivel] || b.detalles.length - a.detalles.length);
-  $("#ver-filas").innerHTML = filas.length ? filas.map((g) => `<tr>
-    <td><span class="nivel ${g.nivel}">${g.nivel}</span></td><td>${esc(g.modulo)}</td><td>${esc(g.capa)}</td>
-    <td><details><summary>${esc(g.regla)}</summary><ul>${g.detalles.slice(0, 200).map((d) => `<li>${esc(d) || "—"}</li>`).join("")}${g.detalles.length > 200 ? `<li>… ${g.detalles.length - 200} más</li>` : ""}</ul></details></td>
-    <td class="num">${g.detalles.length}</td></tr>`).join("")
-    : `<tr><td colspan="5" class="vacio">${hallazgos().length ? "Ningún hallazgo con estos filtros." : "Sin hallazgos."}</td></tr>`;
+  const v = estado.ver; if (!v) return;
+  const c = v.conteo, e = c.ERROR || 0, a = c.AVISO || 0;
+  const grupos = v.grupos.filter((g) => g.nivel !== "INFO"), notas = v.grupos.filter((g) => g.nivel === "INFO");
+  const titulo = e ? `${plural(e, "error", "errores")}${a ? " · " + plural(a, "aviso") : ""}` : a ? `Apto · ${plural(a, "aviso")}` : "Apto para entregar";
+  const sub = `Fase de ${v.fase_nombre} · ${plural(v.capas.length, "capa")} · ${esc(estado.etiqueta)}`;
+  const fila = (g) => item({ clase: g.nivel, titulo: g.regla, sub: `${g.capa === "-" ? "General" : g.capa} · ${plural(g.n, "caso")}`, tag: ETIQ[g.nivel], ayuda: g.ayuda, casos: g.ejemplos, total: g.n });
+  let html = `<div class="resumen"><div><h2><span class="dot ${e ? "no" : "si"}"></span>${esc(titulo)}</h2><div class="sub">${sub}</div></div>
+    <div class="acciones"><button class="enlace" id="btn-csv">Descargar CSV</button></div></div>`;
+  if (!grupos.length) html += `<div class="apto"><svg><use href="#check"/></svg><b>Sin errores ni avisos</b><span style="color:var(--muted)">El Modelo cumple lo revisado para la fase de ${esc(v.fase_nombre)}.</span></div>`;
+  else html += `<ul class="lista">${grupos.map(fila).join("")}</ul>`;
+  if (notas.length) html += `<button class="mas" data-lista="notas" style="border:1px solid var(--line-2);border-radius:var(--radius);margin-top:14px">Mostrar ${plural(notas.length, "nota informativa", "notas informativas")}</button>
+    <div id="notas" class="oculto"><div class="lista-titulo">Notas informativas</div><ul class="lista">${notas.map(fila).join("")}</ul></div>`;
+  $("#vista-verificacion").innerHTML = html;
+  $("#btn-csv").onclick = () => {
+    const q = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
+    const filas = v.grupos.flatMap((g) => g.ejemplos.map((d) => [g.nivel, g.capa, g.regla, d, g.ayuda].map(q).join(",")));
+    descargar(new Blob(["﻿" + ["nivel,capa,regla,caso,explicacion"].concat(filas).join("\n")], { type: "text/csv" }), "verificacion.csv");
+  };
 }
-$("#btn-ver-json").onclick = () => descargar(new Blob([JSON.stringify(estado.verificacion, null, 1)], { type: "application/json" }), "verificacion.json");
-$("#btn-ver-csv").onclick = () => {
-  const q = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-  const csv = ["modulo,nivel,capa,regla,detalle"].concat(hallazgos().map((h) => [h.modulo, h.nivel, h.capa, h.regla, h.detalle].map(q).join(","))).join("\n");
-  descargar(new Blob(["﻿" + csv], { type: "text/csv" }), "verificacion.csv");
+
+/* ------------------------------------------------------------ codificación */
+function pintarArchivos() {
+  const marca = (id, nombre) => { const el = $(id); el.classList.toggle("listo", !!nombre); el.querySelector(".dot").className = "dot" + (nombre ? " ok" : ""); if (nombre) el.lastElementChild.textContent = nombre; };
+  marca("#f-bd", estado.bd && estado.bd.split("/").pop());
+  marca("#f-config", estado.config && estado.configNombre);
+  $("#btn-codificar").classList.toggle("oculto", !(estado.bd && estado.config && estado.modelo));
+}
+$("#in-bd").onchange = async (e) => {
+  const fs = Array.from(e.target.files); e.target.value = "";
+  await ocupado($("label[for=in-bd]"), async () => {
+    for (const f of fs) {
+      if (/\.json$/i.test(f.name)) { const t = await f.text(); JSON.parse(t); estado.config = true; estado.configNombre = f.name; $("#config").value = t; }
+      else if (/\.xlsx$/i.test(f.name)) { await servicio("borrar", { ruta: "bd" }); await motor.escribir("bd/" + f.name, f); estado.bd = "bd/" + f.name; }
+    }
+    pintarArchivos();
+    if (estado.bd && estado.config && estado.modelo) await codificar();
+    else if (estado.bd && !estado.config) toast("Ahora suba la configuración (.json) que relaciona la BD con el Modelo.");
+  });
 };
+$("#config").oninput = () => { estado.config = !!$("#config").value.trim(); estado.configNombre = estado.configNombre || "configuración editada"; pintarArchivos(); };
+$("#btn-config-guardar").onclick = () => descargar(new Blob([$("#config").value], { type: "application/json" }), estado.configNombre || "config.json");
+$("#btn-codificar").onclick = (e) => ocupado(e.currentTarget, codificar);
 
-/* ------------------------------------------------------------ 2. codificar */
-function leerConfig() {
-  const t = $("#config").value.trim();
-  if (!t) throw new Error("La configuración está vacía: abra un .json o use el ejemplo");
-  try { return JSON.parse(t); } catch (e) { throw new Error("La configuración no es JSON válido: " + e.message); }
-}
-$("#btn-config-ejemplo").onclick = (e) => ocupado(e.currentTarget, async () => {
-  $("#config").value = JSON.stringify(await servicio("ejemplo_config", {}), null, 2);
-});
-$("#btn-config-guardar").onclick = () => descargar(new Blob([$("#config").value], { type: "application/json" }), "config.json");
-$("#btn-inspeccionar").onclick = (e) => ocupado(e.currentTarget, async () => {
-  const r = await servicio("inspeccionar_bd", { ruta_bd: estado.bd });
-  $("#bd-hojas").innerHTML = Object.entries(r.hojas).map(([h, d]) => `<div class="hoja"><b>${esc(h)}</b> · ${d.filas} filas
-    <div class="cols">${d.encabezados.map((c) => `<span>${esc(c)}</span>`).join("")}</div></div>`).join("");
-});
-$("#btn-validar").onclick = (e) => ocupado(e.currentTarget, async () => {
-  const r = await servicio("validar_config", { config: leerConfig(), ruta_bd: estado.bd, ruta_modelo: estado.modelo });
-  $("#config-resultado").innerHTML = r.valida
-    ? `<div class="ok-caja">Configuración válida${estado.bd ? " para esta BD" : ""}${estado.modelo ? " y este Modelo" : ""}. Hojas: ${esc(Object.entries(r.hojas || {}).map(([h, c]) => h + " → " + c).join(" · "))}</div>`
-    : `<div class="error-caja"><b>${r.problemas.length} problema(s)</b><ul style="margin:4px 0 0 18px;padding:0">${r.problemas.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
-});
-$("#btn-codificar").onclick = (e) => ocupado(e.currentTarget, async () => {
-  const cfg = leerConfig(), escribir = $("#cod-escribir").checked;
-  const base = estado.bd.split("/").pop().replace(/\.xlsx$/i, "");
-  const salidaBd = `salidas/${base} - codificada.xlsx`, copia = "salidas/Modelo codificado";
-  await servicio("borrar", { ruta: "salidas" });
-  if (escribir) await servicio("crear_copia_staging", { ruta_modelo: estado.modelo, destino: copia });
-  const r = await servicio("codificar_bd", { ruta_bd: estado.bd, config: cfg, ruta_modelo: estado.modelo, ruta_bd_salida: salidaBd,
-    escribir_en: escribir ? copia : null, incluir_asignaciones: true, sobrescribir_salida: true });
-  r._descargas = [[salidaBd, base + " - codificada.xlsx", "BD codificada (.xlsx)"]];
-  if (escribir) {
-    await servicio("empaquetar", { carpeta: copia, destino_zip: "salidas/Modelo codificado.zip" });
-    r._descargas.push(["salidas/Modelo codificado.zip", "Modelo codificado.zip", "Modelo codificado (.zip)"]);
-    r._copia = copia;
+async function codificar() {
+  let cfg;
+  try { cfg = JSON.parse($("#config").value); } catch (err) { throw new Error("La configuración no es JSON válido: " + err.message); }
+  const val = await servicio("validar_config", { config: cfg, ruta_bd: estado.bd, ruta_modelo: estado.modelo });
+  $("#vistas").classList.remove("oculto"); irVista("codificacion");
+  if (!val.valida) {
+    $("#vista-codificacion").innerHTML = `<div class="resumen"><div><h2><span class="dot no"></span>La configuración tiene ${plural(val.problemas.length, "problema")}</h2><div class="sub">Corríjala y vuelva a subirla. No se generó ningún archivo.</div></div></div>
+      <ul class="lista">${val.problemas.map((p) => item({ clase: "no", titulo: p })).join("")}</ul>`;
+    return;
   }
-  estado.codificacion = r; pintarCodificacion();
-});
-$("#cod-filtro").onchange = $("#cod-buscar").oninput = () => pintarCodificacion();
+  $("#vista-codificacion").innerHTML = `<div class="esperando"><span class="cargando"></span>Codificando…</div>`;
+  const base = estado.bd.split("/").pop().replace(/\.xlsx$/i, ""), salidaBd = `salidas/${base} - codificada.xlsx`, copia = "salidas/Modelo codificado";
+  await servicio("borrar", { ruta: "salidas" });
+  await servicio("crear_copia_staging", { ruta_modelo: estado.modelo, destino: copia });
+  const r = await servicio("codificar_bd", { ruta_bd: estado.bd, config: cfg, ruta_modelo: estado.modelo, ruta_bd_salida: salidaBd, escribir_en: copia, incluir_asignaciones: true, sobrescribir_salida: true });
+  await servicio("empaquetar", { carpeta: copia, destino_zip: "salidas/Modelo codificado.zip" });
+  r._descargas = [[salidaBd, base + " - codificada.xlsx"], ["salidas/Modelo codificado.zip", "Modelo codificado.zip"]];
+  r._copia = copia;
+  estado.cod = r; pintarCodificacion();
+}
 function pintarCodificacion() {
-  const r = estado.codificacion; if (!r) return;
-  $("#cod-resultado").classList.remove("oculto");
-  const rep = r.reporte, f = rep.filas || {};
-  $("#cod-kpis").innerHTML = kpi(f.ok || 0, "Filas codificadas", "ok") + kpi(f.sin_resolver || 0, "Sin resolver", (f.sin_resolver ? "err" : ""))
-    + kpi(rep.unidades_nuevas, "Unidades nuevas", "info") + kpi(Object.values(rep.truncados || {}).reduce((a, b) => a + b, 0), "Textos truncados", "warn")
-    + kpi(Object.values(rep.capas || {}).reduce((a, b) => a + b, 0), "Registros generados");
-  const av = [];
-  if (rep.actividades_a_positivo?.length) av.push(`<div class="aviso-caja">Estas actividades reciben materiales pero no están como <b>MAT_ARQUEO = Positivo</b> (no se modifican): <span class="mono">${rep.actividades_a_positivo.map(esc).join(", ")}</span></div>`);
-  if (Object.keys(rep.columnas_faltantes || {}).length) av.push(`<div class="error-caja">Columnas de la configuración que no existen en la BD: ${esc(Object.entries(rep.columnas_faltantes).map(([h, c]) => h + ": " + c.join(", ")).join(" · "))}</div>`);
-  if (Object.keys(rep.sin_profundidad || {}).length) av.push(`<div class="aviso-caja">Sin profundidad en la BD ni en la unidad (se usó el valor por defecto): ${esc(Object.entries(rep.sin_profundidad).map(([k, v]) => k + ": " + v).join(" · "))}</div>`);
-  $("#cod-avisos").innerHTML = av.join("");
-  $("#cod-descargas").innerHTML = r._descargas.map(([ruta, nombre, et], i) => `<button class="btn" data-i="${i}">${esc(et)}</button>`).join("")
-    + `<button class="btn" data-json>Asignaciones (.json)</button>` + (r._copia ? `<button class="btn primario" data-verificar>Verificar la copia</button>` : "");
-  $$("#cod-descargas [data-i]").forEach((b) => (b.onclick = () => ocupado(b, async () => { const [ruta, nombre] = r._descargas[+b.dataset.i]; descargar(await motor.leer(ruta), nombre); })));
-  $("#cod-descargas [data-json]").onclick = () => descargar(new Blob([JSON.stringify({ reporte: r.reporte, asignaciones: r.asignaciones, unidades_nuevas: r.unidades_nuevas }, null, 1)], { type: "application/json" }), "asignaciones.json");
-  const bv = $("#cod-descargas [data-verificar]");
-  if (bv) bv.onclick = () => { setModelo(r._copia, "Copia codificada"); irA("verificar"); $("#btn-verificar").click(); };
-  const fe = $("#cod-filtro").value, q = $("#cod-buscar").value.trim().toLowerCase();
-  const filas = r.asignaciones.filter((a) => (!fe || a.estado === fe) && (!q || JSON.stringify(a).toLowerCase().includes(q)));
-  $("#cod-filas").innerHTML = filas.map((a) => `<tr><td>${esc(a.hoja)} · ${a.fila}</td><td>${esc(a.id_bd)}</td>
-    <td><span class="estado-fila ${esc(a.estado)}">${a.estado === "ok" ? "Codificada" : "Sin resolver"}</span></td>
-    <td class="mono">${esc(a.ID_ACT_ARQ)}</td><td class="mono">${esc(a.ID_UNI_EX)}</td><td class="mono">${a.ids_modelo.map(esc).join("<br>")}</td>
-    <td style="font-size:12.5px;color:var(--muted)">${a.notas.map(esc).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="7" class="vacio">Sin filas</td></tr>`;
-  $("#cod-unidades").innerHTML = r.unidades_nuevas.map((u) => `<tr><td class="mono">${esc(u.id)}</td><td>${esc(u.tipo)}</td><td>${esc(u.descripcion)}</td></tr>`).join("")
-    || `<tr><td colspan="3" class="vacio">Ninguna: todas las unidades ya existían</td></tr>`;
+  const r = estado.cod, rep = r.reporte, f = rep.filas || {};
+  const ok = f.ok || 0, mal = f.sin_resolver || 0;
+  const titulo = mal ? `${plural(ok, "fila codificada", "filas codificadas")} · ${mal} sin resolver` : `${plural(ok, "fila codificada", "filas codificadas")}`;
+  const cambios = [];
+  for (const [capa, n] of Object.entries(rep.capas || {})) cambios.push(item({ clase: "ok", titulo: `${plural(n, "registro")} en ${capa}`, sub: "Capa de materiales de la copia del Modelo", tag: "Nuevo" }));
+  for (const u of r.unidades_nuevas || []) cambios.push(item({ clase: "ok", titulo: `Unidad nueva ${u.id}`, sub: u.tipo, tag: "Nuevo", ayuda: u.descripcion }));
+  const truncados = Object.entries(rep.truncados || {});
+  if (truncados.length) cambios.push(item({ clase: "AVISO", titulo: `${plural(truncados.reduce((a, [, n]) => a + n, 0), "texto recortado", "textos recortados")}`, sub: "Superaban el límite del campo", tag: "Aviso", ayuda: "Se recortaron para caber en el campo del shapefile (límite en bytes). Revise que el texto siga siendo legible.", casos: truncados.map(([k, n]) => `${k}: ${n}`) }));
+  if (rep.actividades_a_positivo?.length) cambios.push(item({ clase: "AVISO", titulo: "Actividades con materiales que no están como Positivo", sub: plural(rep.actividades_a_positivo.length, "actividad", "actividades"), tag: "Aviso", ayuda: "Reciben materiales pero su MAT_ARQUEO no es «Positivo». No se modificaron: corríjalo en ACTIVIDADES ARQUEOLÓGICAS.", casos: rep.actividades_a_positivo }));
+  if (Object.keys(rep.sin_profundidad || {}).length) cambios.push(item({ clase: "AVISO", titulo: "Materiales sin profundidad", sub: "Se usó el valor por defecto", tag: "Aviso", ayuda: "Ni la BD ni la descripción de la unidad tenían profundidad.", casos: Object.entries(rep.sin_profundidad).map(([k, v]) => `${k}: ${v}`) }));
+  if (Object.keys(rep.columnas_faltantes || {}).length) cambios.push(item({ clase: "no", titulo: "Columnas de la configuración que no existen en la BD", tag: "Error", casos: Object.entries(rep.columnas_faltantes).map(([h, c]) => `${h}: ${c.join(", ")}`) }));
+  const orden = (a, b) => (a.estado === b.estado ? 0 : a.estado === "ok" ? 1 : -1);
+  const filas = [...r.asignaciones].sort(orden).map((a) => item({
+    clase: a.estado === "ok" ? "ok" : "no",
+    titulo: a.estado === "ok" ? `${a.id_bd || "Fila " + a.fila} → ${a.ids_modelo.join(", ")}` : `${a.id_bd || "Fila " + a.fila} sin resolver`,
+    sub: `${a.hoja} · fila ${a.fila}${a.ID_UNI_EX ? " · " + a.ID_UNI_EX : a.ID_ACT_ARQ ? " · " + a.ID_ACT_ARQ : ""}`,
+    tag: a.estado === "ok" ? "Codificada" : "Sin resolver",
+    ayuda: a.notas.join(" · "),
+  }));
+  const muchas = filas.length > 60;
+  $("#vista-codificacion").innerHTML = `<div class="resumen"><div><h2><span class="dot ${mal ? "no" : "si"}"></span>${esc(titulo)}</h2>
+      <div class="sub">${plural(rep.unidades_nuevas || 0, "unidad nueva", "unidades nuevas")} · sus archivos originales no se modificaron</div></div>
+      <div class="acciones">${r._descargas.map(([, n], i) => `<button class="btn${i === 0 ? " primario" : ""}" data-d="${i}">Descargar ${i === 0 ? "BD codificada" : "Modelo (.zip)"}</button>`).join("")}
+      <button class="btn" id="btn-ver-copia">Verificar la copia</button></div></div>
+    <div class="lista-titulo">Cambios en el Modelo</div>
+    ${cambios.length ? `<ul class="lista">${cambios.join("")}</ul>` : `<div class="vacio">Sin cambios</div>`}
+    <div class="lista-titulo">Filas de la base de datos</div>
+    <ul class="lista">${filas.slice(0, 60).join("")}</ul>
+    ${muchas ? `<button class="mas" data-lista="mas-filas">Mostrar ${filas.length - 60} filas más</button><ul class="lista oculto" id="mas-filas">${filas.slice(60).join("")}</ul>` : ""}`;
+  $$("#vista-codificacion [data-d]").forEach((b) => (b.onclick = () => ocupado(b, async () => { const [ruta, nombre] = r._descargas[+b.dataset.d]; descargar(await motor.leer(ruta), nombre); })));
+  $("#btn-ver-copia").onclick = () => { estado.modelo = r._copia; estado.etiqueta = "Copia codificada"; $("#modelo-actual").textContent = estado.etiqueta; irVista("verificacion"); verificar(); };
 }
 
-/* ------------------------------------------------------------ IDs y catálogo */
+/* ------------------------------------------------------------ herramientas de códigos */
 $("#btn-analizar").onclick = (e) => ocupado(e.currentTarget, async () => {
   const r = await servicio("analizar_id", { codigo: $("#id-codigo").value });
-  pintarId($("#id-resultado"), r);
+  const filas = Object.entries(r).filter(([k, v]) => !["codigo", "valido", "errores"].includes(k) && v !== null && v !== "").map(([k, v]) => `<tr><th style="width:130px">${esc(k)}</th><td class="mono">${esc(v)}</td></tr>`).join("");
+  $("#id-resultado").innerHTML = (r.valido ? `<div class="caja ok">Código válido</div>` : `<div class="caja no">${r.errores.map(esc).join("<br>")}</div>`) + (filas ? `<table>${filas}</table>` : "");
 });
 $("#id-codigo").onkeydown = (e) => { if (e.key === "Enter") $("#btn-analizar").click(); };
-function pintarId(el, r) {
-  const filas = Object.entries(r).filter(([k, v]) => !["codigo", "valido", "errores"].includes(k) && v !== null && v !== "").map(([k, v]) => `<tr><th style="width:130px">${esc(k)}</th><td class="mono">${esc(v)}</td></tr>`).join("");
-  el.innerHTML = (r.valido ? `<div class="ok-caja">Código válido</div>` : `<div class="error-caja">${r.errores.map(esc).join("<br>")}</div>`)
-    + (filas ? `<div class="tabla"><table>${filas}</table></div>` : "");
-}
 $("#sig-tipo").onchange = () => {
   const t = $("#sig-tipo").value;
   $("#sig-capa").classList.toggle("oculto", t !== "material");
   $("#sig-fase").classList.toggle("oculto", !["actividad", "unidad"].includes(t));
-  $("#sig-base").placeholder = { material: "Base: ID_ACT_ARQ (19)", poligono: "Base: registro (8), p. ej. R0125A22" }[t] || "Base: polígono específico (12)";
+  $("#sig-base").placeholder = { material: "Base: ID_ACT_ARQ (19)", poligono: "Base: registro (8)" }[t] || "Base: polígono específico (12)";
 };
 $("#btn-siguiente").onclick = (e) => ocupado(e.currentTarget, async () => {
+  if (!estado.modelo) throw new Error("Primero suba un Modelo");
   const t = $("#sig-tipo").value;
   const r = await servicio("siguiente_id", { ruta_modelo: estado.modelo, tipo: t, base: $("#sig-base").value, fase: $("#sig-fase").value, capa: t === "material" ? $("#sig-capa").value : null });
-  $("#sig-resultado").innerHTML = `<div class="ok-caja">Siguiente: <b class="mono">${esc(r.siguiente)}</b> · ${r.existentes_con_esa_base} existentes con esa base</div>`;
+  $("#sig-resultado").innerHTML = `<div class="caja ok">Siguiente: <b class="mono">${esc(r.siguiente)}</b> · ${r.existentes_con_esa_base} existentes con esa base</div>`;
 });
 async function cargarCatalogo() {
-  if (!estado.listo || cargarCatalogo.hecho) return; cargarCatalogo.hecho = true;
+  if (cargarCatalogo.hecho) return; cargarCatalogo.hecho = true;
   try {
     const r = await servicio("listar_capas", {});
     $("#cat-capa").innerHTML = r.capas.map((c) => `<option>${esc(c)}</option>`).join("");
     $("#sig-capa").innerHTML = Object.keys(r.materiales).map((c) => `<option>${esc(c)}</option>`).join("");
     $("#cat-capa").value = "CERAMICAS"; $("#cat-capa").onchange();
-  } catch (e) { cargarCatalogo.hecho = false; toast(esc(e.message)); }
+  } catch (e) { cargarCatalogo.hecho = false; toast(e.message); }
 }
 $("#cat-capa").onchange = async () => {
   try {
     const r = await servicio("campos_capa", { capa: $("#cat-capa").value });
-    $("#cat-campos").innerHTML = `<div class="tabla"><table><thead><tr><th>Campo</th><th>Tipo</th><th class="num">Long.</th><th>Obligación</th></tr></thead><tbody>${r.campos.map((c) => `<tr>
-      <td><span class="mono">${esc(c.campo)}</span>${c.dominio ? ` <span class="chip" role="button" data-dom="${esc(c.campo)}" style="font-size:11.5px;padding:1px 8px">dominio</span>` : ""}<div style="font-size:12px;color:var(--muted)">${esc(c.etiqueta)}</div></td>
-      <td>${esc(c.tipo)}</td><td class="num">${c.longitud ?? ""}</td><td style="font-size:12.5px">${esc(c.obligacion)}</td></tr>
-      <tr class="oculto" data-vals="${esc(c.campo)}"><td colspan="4"></td></tr>`).join("")}</tbody></table></div>`;
-    $$("#cat-campos [data-dom]").forEach((b) => (b.onclick = async () => {
-      const fila = $(`#cat-campos tr[data-vals="${CSS.escape(b.dataset.dom)}"]`);
-      if (!fila.classList.contains("oculto")) { fila.classList.add("oculto"); return; }
-      const d = await servicio("dominio", { capa: $("#cat-capa").value, campo: b.dataset.dom });
-      fila.firstElementChild.innerHTML = `<ul class="valores">${d.valores.map((v) => `<li>${esc(v)}</li>`).join("")}</ul>`;
-      fila.classList.remove("oculto");
-    }));
-  } catch (e) { toast(esc(e.message)); }
+    $("#cat-campos").innerHTML = `<ul class="lista">${r.campos.map((c) => item({ clase: c.dominio ? "INFO" : "", titulo: c.campo, sub: `${c.etiqueta} · ${c.tipo}${c.longitud ? " " + c.longitud : ""}`, tag: c.dominio ? "Dominio" : "", ayuda: c.obligacion })).join("")}</ul>`;
+  } catch (e) { toast(e.message); }
 };
 
-/* ------------------------------------------------------------ arranque */
-(async () => {
-  $("#ayuda-motor").textContent = MV.modo === "navegador" ? ", dentro de este navegador: no se envían a ningún servidor" : ", por el servidor Python local (127.0.0.1)";
-  const progreso = (t) => ($("#motor-texto").textContent = t);
-  try {
-    progreso(motor.nombre + " · iniciando…");
-    const t0 = performance.now();
-    const desc = await motor.iniciar(progreso);
-    estado.listo = true;
-    $("#motor-punto").classList.add("listo");
-    progreso(`${motor.nombre} · listo en ${((performance.now() - t0) / 1000).toFixed(1)} s`);
-    $("#motor").title = desc;
-    actualizarBotones();
-  } catch (e) {
-    $("#motor-punto").classList.add("error");
-    progreso(motor.nombre + " · no se pudo iniciar");
-    toast("No se pudo iniciar el motor: " + esc(e.message || e), "error", 20000);
-  }
+/* ------------------------------------------------------------ ejemplo sintético (?ejemplo en la URL) */
+if (new URLSearchParams(location.search).has("ejemplo")) (async () => {
+  abrirApp(); pintarEspera("Cargando el ejemplo sintético…");
+  await ocupado(null, async () => {
+    const r = await servicio("cargar_ejemplo", { destino: "ejemplo" });
+    estado.modelo = "ejemplo/modelo_con_errores"; estado.etiqueta = "Ejemplo sintético";
+    $("#modelo-actual").textContent = estado.etiqueta;
+    estado.bd = "ejemplo/" + r.bd; estado.config = true; estado.configNombre = r.config;
+    $("#config").value = await (await motor.leer("ejemplo/" + r.config)).text();
+    pintarArchivos(); await verificar();
+  });
 })();
 </script>
 </body>

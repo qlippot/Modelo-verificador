@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modelo-verificador"
-version = "0.1.0"
+version = "1.1.0"
 description = "Verificación y codificación del Modelo de Datos Geográfico ICANH V4 (sin IA)"
 requires-python = ">=3.10"
 dependencies = ["pyshp>=2.3", "openpyxl>=3.1", "xlrd>=2.0", "shapely>=2.0"]

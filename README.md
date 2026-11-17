@@ -29,6 +29,7 @@ chflags nohidden .venv/lib/python3.*/site-packages/*.pth
 
 ```bash
 modelo-verificador verificar "ruta/Modelo" -o verificacion.json
+modelo-verificador verificar "ruta/Modelo" --fase diagnostico
 modelo-verificador verificar "ruta/Modelo" --modulos formato --completo
 modelo-verificador codificar BD.xlsx config.json "ruta/Modelo" --bd-salida "BD - codificada.xlsx" -o asignaciones.json
 modelo-verificador codificar BD.xlsx config.json "ruta/Modelo" --escribir-en "ruta/Modelo_staging"
@@ -45,7 +46,7 @@ from modelo_verificador.verificar import verificar_todo
 from modelo_verificador.codificar import codificar, escribir_bd, escribir_modelo
 from modelo_verificador import ids
 
-res = verificar_todo("ruta/Modelo")                 # {conteo, apto, modulos: {formato, coherencia, faltantes}}
+res = verificar_todo("ruta/Modelo", fase="registro")  # {conteo, apto, grupos, modulos: {formato, coherencia, faltantes, fase}}
 cod = codificar("BD.xlsx", "config.json", "ruta/Modelo")
 escribir_bd(cod, "BD.xlsx", "BD - codificada.xlsx")
 ids.analizar("R0125A220005PI00001C0001")
@@ -105,11 +106,19 @@ Claude Desktop (`claude_desktop_config.json`) u otro cliente con el mismo format
 }
 ```
 
-## WebApp (HTML)
+## WebApp (HTML) — «Autoverificador»
 
 Una sola interfaz (`web/plantilla.html`) con dos motores intercambiables. Ambos ejecutan el mismo código Python
 (`servicios.py`), así que dan los mismos resultados.
 
+- **En navegador (recomendado, y el que se publica en GitHub Pages):** un único `.html` autocontenido que ejecuta el
+  paquete con Pyodide. No necesita instalar nada.
+
+  ```bash
+  .venv/bin/python web/construir_navegador.py
+  ```
+
+  Genera `web/dist/modelo-verificador.html` (≈1,4 MB), que también se abre con doble clic.
 - **Local:** un servidor Python en este equipo.
 
   ```bash
@@ -117,29 +126,27 @@ Una sola interfaz (`web/plantilla.html`) con dos motores intercambiables. Ambos 
   ```
 
   Abre `http://127.0.0.1:8765/`. Opciones: `--puerto`, `--no-abrir`.
-- **En navegador:** un único `.html` autocontenido que ejecuta el paquete con Pyodide. No necesita instalar nada y se
-  puede compartir como archivo.
 
-  ```bash
-  .venv/bin/python web/construir_navegador.py
-  ```
+Flujo de la interfaz:
+1. **Portada:** se elige la fase (Registro / Diagnóstico / Implementación) y se sube la carpeta del Modelo (botón o
+   arrastrar). La fase elegida se recuerda.
+2. **Resultado:** la verificación corre sola. Errores primero, luego avisos; las notas informativas quedan plegadas.
+   Cada fila se abre para ver qué significa la regla, cómo corregirla y los casos. Cambiar de fase vuelve a verificar.
+3. **Codificar materiales** (panel lateral): se suben la BD (.xlsx) y la configuración (.json); al tener ambas se
+   codifica y se muestran los cambios (registros nuevos, unidades nuevas, avisos) y el estado de cada fila. Se descargan
+   la BD codificada y el Modelo codificado (.zip), y la copia se puede verificar con un clic.
 
-  Genera `web/dist/modelo-verificador.html` (≈1,3 MB), que se abre con doble clic.
-
-Las pestañas son tres. **Verificar** muestra resultados por nivel y regla, con filtros, búsqueda y exportación a JSON
-y CSV. **Codificar BD** permite ver las columnas, editar y validar la configuración, codificar y descargar la BD
-codificada, el Modelo codificado (.zip) y las asignaciones; luego se puede verificar la copia con un clic. **IDs y
-catálogo** analiza códigos, calcula el siguiente libre y consulta campos y dominios. El botón **Cargar datos de ejemplo**
-usa los datos sintéticos.
+Las herramientas de códigos (analizar un ID, siguiente código libre, catálogo V4) están en el enlace de la portada.
+Para probar con los datos sintéticos, abra la página con `?ejemplo` al final de la dirección.
+Arriba a la derecha de la portada se puede poner un enlace propio: `ENLACE_EXTERNO` al inicio del script de la plantilla.
 
 | | Local | En navegador |
 |---|---|---|
-| Instalación | Repositorio + Python + dependencias | Ninguna (abrir el .html) |
+| Instalación | Repositorio + Python + dependencias | Ninguna (abrir la página) |
 | Primer arranque | Inmediato | ≈9 s (descarga Pyodide del CDN; luego queda en caché) |
 | Verificar el ejemplo | ≈0,4 s | ≈1,8 s |
-| CRS / extensión de ortoplanos | Sí (rasterio) | No por ahora (aparece como INFO) |
+| CRS / extensión de ortoplanos | Sí (rasterio) | No por ahora (aparece como nota) |
 | Dónde están los datos | Carpeta temporal local, se borra al salir | Memoria del navegador; nada se sube |
-| Para compartir | Cada persona instala el repositorio | Enviar el archivo |
 
 Protecciones del modo local:
 - Escucha solo en 127.0.0.1, con un token aleatorio por ejecución y un Host local obligatorio.
@@ -148,9 +155,18 @@ Protecciones del modo local:
 
 En ambos modos, los archivos elegidos nunca se modifican: todo resultado es una copia descargable.
 
+### Publicar en GitHub Pages
+
+`.github/workflows/pages.yml` corre las pruebas, construye la página y la publica como `index.html` en cada push a
+`main`. Una sola vez: subir el repositorio a GitHub (público, para Pages gratuito) y en **Settings → Pages → Source**
+elegir **GitHub Actions**. La página es estática: los Modelos que se suban se procesan en el navegador de cada persona y
+no llegan a GitHub.
+
 ## Herramienta 1 — Verificar
 
-Cada hallazgo tiene `nivel` (ERROR / AVISO / INFO), `capa`, `regla` y `detalle`. Hay tres módulos:
+Cada hallazgo tiene `nivel` (ERROR / AVISO / INFO), `capa`, `regla` y `detalle`. El resultado incluye además `grupos`:
+los hallazgos agrupados por regla, ordenados por gravedad y con una explicación sencilla (`ayuda`,
+`verificar/explicaciones.py`). Hay tres módulos, más uno opcional por fase:
 
 - **formato** (`verificar/formato.py`): campos y geometría frente a la plantilla V4, `.prj` CTM12, obligatorios vacíos,
   valores fuera de dominio (hoja DOMINIOS del catálogo), textos que exceden el campo DBF **en bytes UTF-8**,
@@ -162,6 +178,10 @@ Cada hallazgo tiene `nivel` (ERROR / AVISO / INFO), `capa`, `regla` y `detalle`.
   EPSG 9377, cobertura, obligatorios en Corte / Cuadrícula / Trinchera con materiales) y conteos del Metadato.
 - **faltantes** (`verificar/faltantes.py`): ortoplanos requeridos, obligatorios y condicionales de actividades, unidades
   sin descripción o profundidad, campos de materiales mayormente vacíos, y filas del Metadato sin diligenciar.
+- **fase** (`verificar/fase.py`, con `fase=`): según el catálogo (hojas TEMAS / GRUPOS, dominio Dom_FASE).
+  *Registro* revisa solo la Zona de Estudio; los campos «posterior a la Fase de Registro» aún no se exigen.
+  *Diagnóstico* exige esos campos y la Zonificación, y avisa de actividades con código PI. *Implementación* revisa todo
+  y exige FECHA_PMA y CODIGO_PMA. En todas, avisa si el campo FASE de los polígonos no corresponde a la fase elegida.
 
 ## Herramienta 2 — Codificar
 

@@ -75,17 +75,23 @@ def _config(config):
 # ------------------------------------------------------------------ herramienta 1: verificar
 def verificar_modelo(ruta_modelo: str,
                      modulos: list[Literal["formato", "coherencia", "faltantes"]] = ["formato", "coherencia", "faltantes"],
-                     completo: bool = False, ejemplos: int = 5) -> dict[str, Any]:
+                     completo: bool = False, ejemplos: int = 5,
+                     fase: Literal["registro", "diagnostico", "implementacion"] | None = None) -> dict[str, Any]:
     """Verifica un Modelo de Datos ICANH V4 (solo lectura).
+
+    `fase` (registro / diagnostico / implementacion) revisa solo lo que se entrega en esa fase del PAP y añade sus
+    reglas: Registro = Zona de Estudio; Diagnóstico = + Zonificación y documentación (códigos DI/ND);
+    Implementación = todo, con PMA aprobado (códigos PI/NP). Sin fase se revisa todo.
 
     Módulos: «formato» (estructura vs. plantilla V4, CRS, obligatorios, dominios, longitudes en bytes, formato y
     unicidad de IDs, vínculos, profundidades), «coherencia» (contención entre polígonos, solapes, fechas, medidas vs.
     geometría, MAT_ARQUEO vs. contenido, ortoplanos, conteos del Metadato) y «faltantes» (ortoplanos requeridos,
     campos vacíos, unidades sin descripción, Metadato sin diligenciar).
     Devuelve conteo por nivel, «apto» (0 ERRORES) y, por módulo, un resumen agrupado por regla con `ejemplos`
-    casos. `completo=True` añade la lista de todos los hallazgos.
+    casos, y `grupos`: la misma información en una lista plana ordenada por gravedad, con una explicación
+    sencilla (`ayuda`) de cada regla. `completo=True` añade la lista de todos los hallazgos.
     """
-    res = verificar_todo(_ruta(ruta_modelo, tipo="dir"), tuple(modulos), completo, ejemplos)
+    res = verificar_todo(_ruta(ruta_modelo, tipo="dir"), tuple(modulos), completo, ejemplos, fase)
     res["modelo"] = _mostrar(res["modelo"])
     return res
 
