@@ -46,7 +46,15 @@ def main(argv=None):
     d = sp.add_parser("dominio", help="Valores de dominio de un campo según el catálogo")
     d.add_argument("capa"); d.add_argument("campo")
 
+    w = sp.add_parser("web", help="Abre la WebApp local en el navegador (servidor en 127.0.0.1)")
+    w.add_argument("--puerto", type=int, default=8765)
+    w.add_argument("--no-abrir", action="store_true", help="No abrir el navegador automáticamente")
+
     a = p.parse_args(argv)
+    if a.cmd == "web":
+        from .web import main as web_main
+        web_main(a.puerto, not a.no_abrir)
+        return 0
     if a.cmd == "verificar":
         res = verificar_todo(a.modelo, tuple(a.modulos.split(",")), a.completo, a.ejemplos)
         _out(res, a.salida)

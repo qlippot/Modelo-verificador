@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-local",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "modelo_verificador", "web", "--no-abrir", "--puerto", "8765"],
+      "env": {"PYTHONPATH": "."},
+      "port": 8765
+    },
+    {
+      "name": "web-navegador",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "http.server", "8766", "--bind", "127.0.0.1", "--directory", "web/dist"],
+      "port": 8766
+    }
+  ]
+}

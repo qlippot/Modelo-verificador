@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modelo-verificador ICANH</title>
+<script>/*MV_CONFIG*/</script>
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --panel-2:#f0eee9; --line:#dedad2; --text:#1f1d1a; --muted:#6b665d;
+  --accent:#8a4b20; --accent-2:#a85e2c; --accent-soft:#f3e6db;
+  --err:#b42318; --err-soft:#fde8e6; --warn:#9a6700; --warn-soft:#fdf3d8; --info:#2f5f8f; --info-soft:#e4eef8;
+  --ok:#1e7a46; --ok-soft:#e2f3e8; --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
+  --radius:10px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#171614; --panel:#201f1c; --panel-2:#2a2825; --line:#3a3733; --text:#ece8e1; --muted:#a39d92;
+  --accent:#e0965e; --accent-2:#f0a873; --accent-soft:#3a2a1e;
+  --err:#ff8a7a; --err-soft:#3d1f1b; --warn:#f2c14e; --warn-soft:#3a3016; --info:#8cb8e6; --info-soft:#1d2b3a;
+  --ok:#6fd39a; --ok-soft:#173326; --shadow:none;
+}}
+:root[data-theme="dark"]{
+  --bg:#171614; --panel:#201f1c; --panel-2:#2a2825; --line:#3a3733; --text:#ece8e1; --muted:#a39d92;
+  --accent:#e0965e; --accent-2:#f0a873; --accent-soft:#3a2a1e;
+  --err:#ff8a7a; --err-soft:#3d1f1b; --warn:#f2c14e; --warn-soft:#3a3016; --info:#8cb8e6; --info-soft:#1d2b3a;
+  --ok:#6fd39a; --ok-soft:#173326; --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:18px;margin:0;font-weight:650;letter-spacing:-.01em}
+header h1 small{display:block;font-size:12.5px;font-weight:400;color:var(--muted)}
+.motor{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:5px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.punto{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.punto.listo{background:var(--ok)} .punto.error{background:var(--err)}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 18px;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font:inherit;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel h2{font-size:15px;margin:0 0 10px;font-weight:650}
+.panel h3{font-size:14px;margin:16px 0 8px;font-weight:600}
+.fila{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ayuda{color:var(--muted);font-size:13.5px;margin:4px 0 10px}
+button.btn,label.btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+button.btn:hover,label.btn:hover{border-color:var(--accent)}
+button.primario{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primario{color:#1b130c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primario{color:#1b130c}}
+button.primario:hover{background:var(--accent-2)}
+button:disabled{opacity:.5;cursor:progress}
+input[type=file]{display:none}
+input[type=text],select,textarea{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text)}
+textarea{width:100%;min-height:260px;font-family:var(--mono);font-size:12.5px;line-height:1.45;resize:vertical}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;user-select:none}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.fuente{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.fuente code,.mono{font-family:var(--mono);font-size:12.5px}
+.vacio{color:var(--muted);font-style:italic}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:4px 0 14px}
+.kpi{border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;background:var(--panel)}
+.kpi b{display:block;font-size:26px;font-weight:650;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.err b{color:var(--err)} .kpi.warn b{color:var(--warn)} .kpi.info b{color:var(--info)} .kpi.ok b{color:var(--ok)}
+.estado-apto{display:inline-block;font-weight:600;padding:4px 12px;border-radius:999px}
+.estado-apto.si{background:var(--ok-soft);color:var(--ok)} .estado-apto.no{background:var(--err-soft);color:var(--err)}
+.nivel{display:inline-block;font-size:11.5px;font-weight:650;letter-spacing:.03em;padding:2px 8px;border-radius:6px}
+.nivel.ERROR{background:var(--err-soft);color:var(--err)} .nivel.AVISO{background:var(--warn-soft);color:var(--warn)} .nivel.INFO{background:var(--info-soft);color:var(--info)}
+.tabla{width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;background:var(--panel-2);font-size:12.5px;color:var(--muted);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+details summary{cursor:pointer}
+details ul{margin:6px 0 2px 18px;padding:0;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.estado-fila{font-size:12px;font-weight:600}
+.estado-fila.ok{color:var(--ok)} .estado-fila.sin_resolver{color:var(--err)}
+.aviso-caja{border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
+.error-caja{border-left:3px solid var(--err);background:var(--err-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
+.ok-caja{border-left:3px solid var(--ok);background:var(--ok-soft);padding:8px 12px;border-radius:6px;font-size:13.5px;margin:10px 0}
+.oculto{display:none!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.hojas{display:grid;gap:10px}
+.hoja{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.hoja .cols{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.hoja .cols span{font-size:12px;font-family:var(--mono);background:var(--panel-2);padding:1px 7px;border-radius:5px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:min(640px,calc(100% - 32px));z-index:10}
+.cargando{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:g .8s linear infinite;vertical-align:-2px}
+@keyframes g{to{transform:rotate(360deg)}}
+.valores{columns:3 220px;font-size:13px;margin:6px 0 0;padding-left:18px}
+footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Modelo-verificador ICANH V4<small>Verificación y codificación del Modelo de Datos Geográfico · sin IA</small></h1>
+  <div class="fila">
+    <span class="motor" id="motor"><span class="punto" id="motor-punto"></span><span id="motor-texto">Iniciando…</span></span>
+    <button class="btn" id="btn-ejemplo" disabled>Cargar datos de ejemplo</button>
+    <button class="btn" id="btn-tema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Modelo de Datos</h2>
+    <p class="ayuda">Elija la carpeta raíz del Modelo (la que contiene «Documentación Actividades Arqueológicas», «Metadato», «Raster»…). Los archivos se procesan en este equipo<span id="ayuda-motor"></span>.</p>
+    <div class="fuente">
+      <label class="btn" for="in-modelo">Elegir carpeta del Modelo…</label>
+      <input type="file" id="in-modelo" webkitdirectory directory multiple>
+      <span id="modelo-actual" class="vacio">Ningún Modelo elegido</span>
+      <span id="modelo-ejemplos" class="fila oculto"></span>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="verificar">1 · Verificar Modelo</button>
+    <button role="tab" aria-selected="false" data-tab="codificar">2 · Codificar BD</button>
+    <button role="tab" aria-selected="false" data-tab="ids">IDs y catálogo</button>
+  </nav>
+
+  <!-- ===================================================== VERIFICAR -->
+  <section id="tab-verificar">
+    <div class="panel">
+      <div class="fila">
+        <span class="chip" role="button" aria-pressed="true" data-mod="formato">Formato</span>
+        <span class="chip" role="button" aria-pressed="true" data-mod="coherencia">Coherencia</span>
+        <span class="chip" role="button" aria-pressed="true" data-mod="faltantes">Faltantes</span>
+        <button class="btn primario" id="btn-verificar" disabled>Verificar</button>
+      </div>
+      <p class="ayuda">Formato: estructura frente a la plantilla V4, dominios, IDs y longitudes. Coherencia: geometría, vínculos, fechas, ortoplanos y Metadato. Faltantes: información que no existe.</p>
+    </div>
+    <div id="ver-resultado" class="oculto">
+      <div class="panel">
+        <div class="fila" style="justify-content:space-between">
+          <h2 style="margin:0">Resultado <span id="ver-apto" class="estado-apto"></span></h2>
+          <div class="fila"><button class="btn" id="btn-ver-json">Descargar JSON</button><button class="btn" id="btn-ver-csv">Descargar CSV</button></div>
+        </div>
+        <div class="kpis" id="ver-kpis" style="margin-top:12px"></div>
+        <div class="fila" style="margin-bottom:10px">
+          <span class="chip" role="button" aria-pressed="true" data-niv="ERROR">ERROR</span>
+          <span class="chip" role="button" aria-pressed="true" data-niv="AVISO">AVISO</span>
+          <span class="chip" role="button" aria-pressed="false" data-niv="INFO">INFO</span>
+          <input type="text" id="ver-buscar" placeholder="Buscar capa, regla o detalle…" style="flex:1;min-width:200px">
+        </div>
+        <div class="tabla"><table><thead><tr><th>Nivel</th><th>Módulo</th><th>Capa</th><th>Regla y casos</th><th class="num">N</th></tr></thead><tbody id="ver-filas"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== CODIFICAR -->
+  <section id="tab-codificar" class="oculto">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Base de datos de materiales</h2>
+        <div class="fuente">
+          <label class="btn" for="in-bd">Elegir BD (.xlsx)…</label>
+          <input type="file" id="in-bd" accept=".xlsx">
+          <span id="bd-actual" class="vacio">Ninguna BD elegida</span>
+        </div>
+        <div class="fila" style="margin-top:10px"><button class="btn" id="btn-inspeccionar" disabled>Ver hojas y columnas</button></div>
+        <div id="bd-hojas" class="hojas" style="margin-top:10px"></div>
+      </div>
+      <div class="panel">
+        <h2>Configuración</h2>
+        <p class="ayuda">Correspondencia de actividades, unidades y mapeo de columnas a campos DBF.</p>
+        <div class="fila" style="margin-bottom:8px">
+          <label class="btn" for="in-config">Abrir .json…</label>
+          <input type="file" id="in-config" accept=".json,application/json">
+          <button class="btn" id="btn-config-ejemplo" disabled>Usar ejemplo</button>
+          <button class="btn" id="btn-config-guardar">Guardar .json</button>
+          <button class="btn" id="btn-validar" disabled>Validar</button>
+        </div>
+        <textarea id="config" spellcheck="false" placeholder='{ "actividades": {...}, "hojas": {...} }'></textarea>
+        <div id="config-resultado"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="fila">
+        <label class="fila" style="gap:6px;font-size:14px"><input type="checkbox" id="cod-escribir" checked> Generar también una copia del Modelo con los materiales (.zip)</label>
+        <button class="btn primario" id="btn-codificar" disabled>Codificar</button>
+      </div>
+      <p class="ayuda">Nunca se modifican los archivos elegidos: se descarga una BD codificada (copia con columnas de códigos) y, si se marca, una copia del Modelo.</p>
+    </div>
+    <div id="cod-resultado" class="oculto">
+      <div class="panel">
+        <div class="fila" style="justify-content:space-between">
+          <h2 style="margin:0">Resultado de la codificación</h2>
+          <div class="fila" id="cod-descargas"></div>
+        </div>
+        <div class="kpis" id="cod-kpis" style="margin-top:12px"></div>
+        <div id="cod-avisos"></div>
+        <h3>Asignaciones por fila</h3>
+        <div class="fila" style="margin-bottom:8px">
+          <select id="cod-filtro"><option value="">Todas</option><option value="ok">Codificadas</option><option value="sin_resolver">Sin resolver</option></select>
+          <input type="text" id="cod-buscar" placeholder="Buscar ID, actividad, nota…" style="flex:1;min-width:200px">
+        </div>
+        <div class="tabla" style="max-height:460px"><table><thead><tr><th>Hoja · fila</th><th>ID BD</th><th>Estado</th><th>ID_ACT_ARQ</th><th>ID_UNI_EX</th><th>ID(s) Modelo</th><th>Notas</th></tr></thead><tbody id="cod-filas"></tbody></table></div>
+        <h3>Unidades nuevas</h3>
+        <div class="tabla"><table><thead><tr><th>ID</th><th>Tipo</th><th>Descripción</th></tr></thead><tbody id="cod-unidades"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== IDs -->
+  <section id="tab-ids" class="oculto">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Analizar un código</h2>
+        <div class="fila"><input type="text" id="id-codigo" class="mono" placeholder="R0125A220005PI00001C0001" style="flex:1;min-width:220px"><button class="btn primario" id="btn-analizar" disabled>Analizar</button></div>
+        <div id="id-resultado" style="margin-top:10px"></div>
+        <h2 style="margin-top:22px">Siguiente código libre en el Modelo</h2>
+        <div class="fila">
+          <select id="sig-tipo"><option value="actividad">Actividad</option><option value="unidad">Unidad mínima</option><option value="material">Material</option><option value="zonificacion">Zonificación</option><option value="poligono">Polígono específico</option></select>
+          <select id="sig-fase"><option value="PI">PI · Implementación</option><option value="DI">DI · Aprobación PMA</option></select>
+          <select id="sig-capa" class="oculto"></select>
+        </div>
+        <div class="fila" style="margin-top:8px"><input type="text" id="sig-base" class="mono" placeholder="Base: R0125A220005" style="flex:1;min-width:220px"><button class="btn" id="btn-siguiente" disabled>Calcular</button></div>
+        <div id="sig-resultado" style="margin-top:10px"></div>
+      </div>
+      <div class="panel">
+        <h2>Catálogo V4</h2>
+        <div class="fila"><select id="cat-capa" style="flex:1"></select></div>
+        <div id="cat-campos" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </section>
+  <footer>Modelo-verificador · el catálogo de objetos ICANH manda · los datos no salen de este equipo</footer>
+</main>
+<div id="toast"></div>
+
+<script type="text/js-worker" id="mv-worker">
+/* Motor en navegador: Pyodide en un Web Worker (no bloquea la página). */
+let py = null;
+const post = (m, t) => self.postMessage(m, t || []);
+self.onmessage = async (e) => {
+  const { id, tipo, datos } = e.data;
+  try {
+    let r = null, transfer = [];
+    if (tipo === "iniciar") {
+      post({ tipo: "progreso", texto: "Descargando Python (Pyodide)…" });
+      importScripts(datos.indexURL + "pyodide.js");
+      py = await loadPyodide({ indexURL: datos.indexURL });
+      post({ tipo: "progreso", texto: "Cargando shapely, pyshp, xlrd…" });
+      await py.loadPackage(["micropip", "shapely", "pyshp", "xlrd"]);
+      post({ tipo: "progreso", texto: "Instalando openpyxl…" });
+      await py.pyimport("micropip").install(["openpyxl"]);
+      post({ tipo: "progreso", texto: "Preparando el verificador…" });
+      py.unpackArchive(datos.paquete, "zip", { extractDir: "/app" });
+      py.runPython("import sys; sys.path.insert(0, '/app')\nfrom modelo_verificador import servicios");
+      py.FS.mkdirTree("/sesion");
+      r = { python: py.runPython("import sys; sys.version.split()[0]") };
+    } else if (tipo === "escribir") {
+      const ruta = "/sesion/" + datos.ruta;
+      py.FS.mkdirTree(ruta.substring(0, ruta.lastIndexOf("/")));
+      py.FS.writeFile(ruta, new Uint8Array(datos.bytes));
+    } else if (tipo === "llamar") {
+      py.globals.set("_mv_n", datos.nombre);
+      py.globals.set("_mv_a", datos.argumentos);
+      r = JSON.parse(py.runPython("servicios.llamar_json(_mv_n, _mv_a, '/sesion')"));
+    } else if (tipo === "leer") {
+      const u = py.FS.readFile("/sesion/" + datos.ruta);
+      r = u.buffer; transfer = [r];
+    }
+    post({ id, ok: true, r }, transfer);
+  } catch (err) {
+    post({ id, ok: false, error: String(err && err.message || err) });
+  }
+};
+</script>
+<script type="application/octet-stream" id="mv-paquete">/*MV_PAQUETE*/</script>
+
+<script>
+"use strict";
+const MV = window.MV || { modo: "local" };
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const estado = { modelo: null, bd: null, verificacion: null, codificacion: null, listo: false, ejemplo: false };
+
+/* ------------------------------------------------------------ motores */
+const MotorLocal = {
+  nombre: "Local · Python",
+  async iniciar() {
+    const r = await this.llamar("listar_capas", {});
+    if (!r.ok) throw new Error(r.error);
+    return "Python en este equipo";
+  },
+  h(extra) { return Object.assign({ "X-MV-Token": MV.token }, extra || {}); },
+  async escribir(ruta, blob) {
+    const r = await fetch("/api/archivo?ruta=" + encodeURIComponent(ruta), { method: "PUT", headers: this.h(), body: blob });
+    if (!r.ok) throw new Error(await r.text());
+  },
+  async llamar(nombre, argumentos) {
+    const r = await fetch("/api/llamar", { method: "POST", headers: this.h({ "Content-Type": "application/json" }), body: JSON.stringify({ nombre, argumentos }) });
+    if (!r.ok) return { ok: false, error: await r.text() };
+    return r.json();
+  },
+  async leer(ruta) {
+    const r = await fetch("/api/archivo?ruta=" + encodeURIComponent(ruta), { headers: this.h() });
+    if (!r.ok) throw new Error(await r.text());
+    return r.blob();
+  },
+};
+
+const MotorNavegador = {
+  nombre: "Navegador · Pyodide",
+  w: null, seq: 0, pend: new Map(),
+  enviar(tipo, datos, transfer) {
+    return new Promise((res, rej) => { const id = ++this.seq; this.pend.set(id, { res, rej }); this.w.postMessage({ id, tipo, datos }, transfer || []); });
+  },
+  async iniciar(progreso) {
+    const src = $("#mv-worker").textContent;
+    this.w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    this.w.onmessage = (e) => {
+      const m = e.data;
+      if (m.tipo === "progreso") { progreso(m.texto); return; }
+      const p = this.pend.get(m.id); if (!p) return; this.pend.delete(m.id);
+      m.ok ? p.res(m.r) : p.rej(new Error(m.error));
+    };
+    const b64 = $("#mv-paquete").textContent.trim();
+    const bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const r = await this.enviar("iniciar", { indexURL: MV.pyodide, paquete: bytes.buffer }, [bytes.buffer]);
+    return "Python " + r.python + " en el navegador";
+  },
+  async escribir(ruta, blob) { const b = await blob.arrayBuffer(); await this.enviar("escribir", { ruta, bytes: b }, [b]); },
+  async llamar(nombre, argumentos) { return this.enviar("llamar", { nombre, argumentos: JSON.stringify(argumentos || {}) }); },
+  async leer(ruta) { return new Blob([await this.enviar("leer", { ruta })]); },
+};
+const motor = MV.modo === "navegador" ? MotorNavegador : MotorLocal;
+
+async function servicio(nombre, argumentos) {
+  const r = await motor.llamar(nombre, argumentos || {});
+  if (!r.ok) throw new Error(r.error);
+  return r.resultado;
+}
+
+/* ------------------------------------------------------------ utilidades de UI */
+function toast(html, tipo = "error", ms = 6000) {
+  const t = $("#toast");
+  t.innerHTML = `<div class="${tipo}-caja" style="box-shadow:0 4px 16px rgba(0,0,0,.15)">${html}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => (t.innerHTML = ""), ms);
+}
+async function ocupado(btn, fn) {
+  const txt = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="cargando"></span> ${txt}`;
+  try { return await fn(); } catch (e) { toast(esc(e.message || e)); console.error(e); } finally { btn.disabled = false; btn.innerHTML = txt; actualizarBotones(); }
+}
+function descargar(blob, nombre) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function kpi(valor, etiqueta, clase = "") { return `<div class="kpi ${clase}"><b>${esc(valor)}</b><span>${esc(etiqueta)}</span></div>`; }
+function actualizarBotones() {
+  const l = estado.listo;
+  $("#btn-verificar").disabled = !(l && estado.modelo);
+  $("#btn-inspeccionar").disabled = !(l && estado.bd);
+  $("#btn-validar").disabled = !l;
+  $("#btn-codificar").disabled = !(l && estado.modelo && estado.bd);
+  $("#btn-analizar").disabled = !l;
+  $("#btn-siguiente").disabled = !(l && estado.modelo);
+  $("#btn-ejemplo").disabled = !l;
+  $("#btn-config-ejemplo").disabled = !l;
+}
+function setModelo(ruta, etiqueta) {
+  estado.modelo = ruta;
+  $("#modelo-actual").className = "";
+  $("#modelo-actual").innerHTML = `<b>${esc(etiqueta)}</b> <code>${esc(ruta)}</code>`;
+  $$("#modelo-ejemplos .chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.ruta === ruta)));
+  actualizarBotones();
+}
+
+/* ------------------------------------------------------------ tema y pestañas */
+$("#btn-tema").onclick = () => {
+  const r = document.documentElement, oscuro = matchMedia("(prefers-color-scheme: dark)").matches;
+  const actual = r.dataset.theme || (oscuro ? "dark" : "light");
+  r.dataset.theme = actual === "dark" ? "light" : "dark";
+  try { localStorage.setItem("mv-tema", r.dataset.theme); } catch (_) {}
+};
+try { const t = localStorage.getItem("mv-tema"); if (t) document.documentElement.dataset.theme = t; } catch (_) {}
+$$("nav.tabs button").forEach((b) => (b.onclick = () => irA(b.dataset.tab)));
+function irA(tab) {
+  $$("nav.tabs button").forEach((x) => x.setAttribute("aria-selected", String(x.dataset.tab === tab)));
+  ["verificar", "codificar", "ids"].forEach((t) => $("#tab-" + t).classList.toggle("oculto", t !== tab));
+  if (tab === "ids") cargarCatalogo();
+}
+$$(".chip[data-mod], .chip[data-niv]").forEach((c) => (c.onclick = () => {
+  c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed") !== "true"));
+  if (c.dataset.niv) pintarVerificacion();
+}));
+
+/* ------------------------------------------------------------ carga de archivos */
+$("#in-modelo").onchange = async (e) => {
+  const files = Array.from(e.target.files).filter((f) => !/(^|\/)\.DS_Store$/.test(f.webkitRelativePath));
+  if (!files.length) return;
+  const raiz = files[0].webkitRelativePath.split("/")[0];
+  const lbl = $("label[for=in-modelo]");
+  await ocupado(lbl, async () => {
+    await servicio("borrar", { ruta: "modelo" });
+    let n = 0;
+    for (const f of files) {
+      const rel = f.webkitRelativePath.split("/").slice(1).join("/");
+      await motor.escribir("modelo/" + rel, f);
+      if (++n % 25 === 0) lbl.innerHTML = `<span class="cargando"></span> Copiando ${n}/${files.length}…`;
+    }
+    setModelo("modelo", raiz + ` · ${files.length} archivos`);
+  });
+  e.target.value = "";
+};
+$("#in-bd").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  await ocupado($("label[for=in-bd]"), async () => {
+    await servicio("borrar", { ruta: "bd" });
+    await motor.escribir("bd/" + f.name, f);
+    estado.bd = "bd/" + f.name;
+    $("#bd-actual").className = ""; $("#bd-actual").innerHTML = `<b>${esc(f.name)}</b>`;
+    $("#bd-hojas").innerHTML = "";
+  });
+  e.target.value = "";
+};
+$("#in-config").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  $("#config").value = await f.text(); $("#config-resultado").innerHTML = ""; e.target.value = "";
+};
+
+$("#btn-ejemplo").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const r = await servicio("cargar_ejemplo", { destino: "ejemplo" });
+  const cont = $("#modelo-ejemplos"); cont.classList.remove("oculto");
+  cont.innerHTML = "<span class='ayuda' style='margin:0'>Ejemplos:</span>" + r.modelos.map((m) => `<span class="chip" role="button" data-ruta="ejemplo/${esc(m)}">${esc(m)}</span>`).join("");
+  $$("#modelo-ejemplos .chip").forEach((c) => (c.onclick = () => setModelo(c.dataset.ruta, "Ejemplo sintético")));
+  setModelo("ejemplo/modelo_con_errores", "Ejemplo sintético");
+  estado.bd = "ejemplo/" + r.bd; $("#bd-actual").className = ""; $("#bd-actual").innerHTML = `<b>${esc(r.bd)}</b> (sintética)`;
+  $("#config").value = await (await motor.leer("ejemplo/" + r.config)).text();
+  toast("Datos sintéticos cargados: dos Modelos (correcto y con errores), una BD y su configuración.", "ok", 4000);
+});
+
+/* ------------------------------------------------------------ 1. verificar */
+$("#btn-verificar").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const modulos = $$(".chip[data-mod]").filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.mod);
+  if (!modulos.length) throw new Error("Elija al menos un módulo");
+  const t0 = performance.now();
+  estado.verificacion = await servicio("verificar_modelo", { ruta_modelo: estado.modelo, modulos, completo: true, ejemplos: 3 });
+  estado.verificacion._ms = Math.round(performance.now() - t0);
+  pintarVerificacion();
+});
+$("#ver-buscar").oninput = () => pintarVerificacion();
+function hallazgos() {
+  const v = estado.verificacion; if (!v) return [];
+  return Object.entries(v.modulos).flatMap(([m, inf]) => (inf.hallazgos || []).map((h) => Object.assign({ modulo: m }, h)));
+}
+function pintarVerificacion() {
+  const v = estado.verificacion; if (!v) return;
+  $("#ver-resultado").classList.remove("oculto");
+  const c = v.conteo;
+  $("#ver-apto").className = "estado-apto " + (v.apto ? "si" : "no");
+  $("#ver-apto").textContent = v.apto ? "Apto: 0 errores" : "No apto";
+  $("#ver-kpis").innerHTML = kpi(c.ERROR || 0, "Errores", "err") + kpi(c.AVISO || 0, "Avisos", "warn") + kpi(c.INFO || 0, "Información", "info")
+    + kpi(v.capas.length, "Capas presentes") + kpi((v._ms / 1000).toFixed(1) + " s", motor.nombre);
+  const niv = $$(".chip[data-niv]").filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.niv);
+  const q = $("#ver-buscar").value.trim().toLowerCase();
+  const grupos = new Map();
+  for (const h of hallazgos()) {
+    if (!niv.includes(h.nivel)) continue;
+    if (q && !`${h.capa} ${h.regla} ${h.detalle} ${h.modulo}`.toLowerCase().includes(q)) continue;
+    const k = [h.nivel, h.modulo, h.capa, h.regla].join("|");
+    if (!grupos.has(k)) grupos.set(k, Object.assign({ detalles: [] }, h));
+    grupos.get(k).detalles.push(h.detalle);
+  }
+  const orden = { ERROR: 0, AVISO: 1, INFO: 2 };
+  const filas = [...grupos.values()].sort((a, b) => orden[a.nivel] - orden[b.nivel] || b.detalles.length - a.detalles.length);
+  $("#ver-filas").innerHTML = filas.length ? filas.map((g) => `<tr>
+    <td><span class="nivel ${g.nivel}">${g.nivel}</span></td><td>${esc(g.modulo)}</td><td>${esc(g.capa)}</td>
+    <td><details><summary>${esc(g.regla)}</summary><ul>${g.detalles.slice(0, 200).map((d) => `<li>${esc(d) || "—"}</li>`).join("")}${g.detalles.length > 200 ? `<li>… ${g.detalles.length - 200} más</li>` : ""}</ul></details></td>
+    <td class="num">${g.detalles.length}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="vacio">${hallazgos().length ? "Ningún hallazgo con estos filtros." : "Sin hallazgos."}</td></tr>`;
+}
+$("#btn-ver-json").onclick = () => descargar(new Blob([JSON.stringify(estado.verificacion, null, 1)], { type: "application/json" }), "verificacion.json");
+$("#btn-ver-csv").onclick = () => {
+  const q = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const csv = ["modulo,nivel,capa,regla,detalle"].concat(hallazgos().map((h) => [h.modulo, h.nivel, h.capa, h.regla, h.detalle].map(q).join(","))).join("\n");
+  descargar(new Blob(["﻿" + csv], { type: "text/csv" }), "verificacion.csv");
+};
+
+/* ------------------------------------------------------------ 2. codificar */
+function leerConfig() {
+  const t = $("#config").value.trim();
+  if (!t) throw new Error("La configuración está vacía: abra un .json o use el ejemplo");
+  try { return JSON.parse(t); } catch (e) { throw new Error("La configuración no es JSON válido: " + e.message); }
+}
+$("#btn-config-ejemplo").onclick = (e) => ocupado(e.currentTarget, async () => {
+  $("#config").value = JSON.stringify(await servicio("ejemplo_config", {}), null, 2);
+});
+$("#btn-config-guardar").onclick = () => descargar(new Blob([$("#config").value], { type: "application/json" }), "config.json");
+$("#btn-inspeccionar").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const r = await servicio("inspeccionar_bd", { ruta_bd: estado.bd });
+  $("#bd-hojas").innerHTML = Object.entries(r.hojas).map(([h, d]) => `<div class="hoja"><b>${esc(h)}</b> · ${d.filas} filas
+    <div class="cols">${d.encabezados.map((c) => `<span>${esc(c)}</span>`).join("")}</div></div>`).join("");
+});
+$("#btn-validar").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const r = await servicio("validar_config", { config: leerConfig(), ruta_bd: estado.bd, ruta_modelo: estado.modelo });
+  $("#config-resultado").innerHTML = r.valida
+    ? `<div class="ok-caja">Configuración válida${estado.bd ? " para esta BD" : ""}${estado.modelo ? " y este Modelo" : ""}. Hojas: ${esc(Object.entries(r.hojas || {}).map(([h, c]) => h + " → " + c).join(" · "))}</div>`
+    : `<div class="error-caja"><b>${r.problemas.length} problema(s)</b><ul style="margin:4px 0 0 18px;padding:0">${r.problemas.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
+});
+$("#btn-codificar").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const cfg = leerConfig(), escribir = $("#cod-escribir").checked;
+  const base = estado.bd.split("/").pop().replace(/\.xlsx$/i, "");
+  const salidaBd = `salidas/${base} - codificada.xlsx`, copia = "salidas/Modelo codificado";
+  await servicio("borrar", { ruta: "salidas" });
+  if (escribir) await servicio("crear_copia_staging", { ruta_modelo: estado.modelo, destino: copia });
+  const r = await servicio("codificar_bd", { ruta_bd: estado.bd, config: cfg, ruta_modelo: estado.modelo, ruta_bd_salida: salidaBd,
+    escribir_en: escribir ? copia : null, incluir_asignaciones: true, sobrescribir_salida: true });
+  r._descargas = [[salidaBd, base + " - codificada.xlsx", "BD codificada (.xlsx)"]];
+  if (escribir) {
+    await servicio("empaquetar", { carpeta: copia, destino_zip: "salidas/Modelo codificado.zip" });
+    r._descargas.push(["salidas/Modelo codificado.zip", "Modelo codificado.zip", "Modelo codificado (.zip)"]);
+    r._copia = copia;
+  }
+  estado.codificacion = r; pintarCodificacion();
+});
+$("#cod-filtro").onchange = $("#cod-buscar").oninput = () => pintarCodificacion();
+function pintarCodificacion() {
+  const r = estado.codificacion; if (!r) return;
+  $("#cod-resultado").classList.remove("oculto");
+  const rep = r.reporte, f = rep.filas || {};
+  $("#cod-kpis").innerHTML = kpi(f.ok || 0, "Filas codificadas", "ok") + kpi(f.sin_resolver || 0, "Sin resolver", (f.sin_resolver ? "err" : ""))
+    + kpi(rep.unidades_nuevas, "Unidades nuevas", "info") + kpi(Object.values(rep.truncados || {}).reduce((a, b) => a + b, 0), "Textos truncados", "warn")
+    + kpi(Object.values(rep.capas || {}).reduce((a, b) => a + b, 0), "Registros generados");
+  const av = [];
+  if (rep.actividades_a_positivo?.length) av.push(`<div class="aviso-caja">Estas actividades reciben materiales pero no están como <b>MAT_ARQUEO = Positivo</b> (no se modifican): <span class="mono">${rep.actividades_a_positivo.map(esc).join(", ")}</span></div>`);
+  if (Object.keys(rep.columnas_faltantes || {}).length) av.push(`<div class="error-caja">Columnas de la configuración que no existen en la BD: ${esc(Object.entries(rep.columnas_faltantes).map(([h, c]) => h + ": " + c.join(", ")).join(" · "))}</div>`);
+  if (Object.keys(rep.sin_profundidad || {}).length) av.push(`<div class="aviso-caja">Sin profundidad en la BD ni en la unidad (se usó el valor por defecto): ${esc(Object.entries(rep.sin_profundidad).map(([k, v]) => k + ": " + v).join(" · "))}</div>`);
+  $("#cod-avisos").innerHTML = av.join("");
+  $("#cod-descargas").innerHTML = r._descargas.map(([ruta, nombre, et], i) => `<button class="btn" data-i="${i}">${esc(et)}</button>`).join("")
+    + `<button class="btn" data-json>Asignaciones (.json)</button>` + (r._copia ? `<button class="btn primario" data-verificar>Verificar la copia</button>` : "");
+  $$("#cod-descargas [data-i]").forEach((b) => (b.onclick = () => ocupado(b, async () => { const [ruta, nombre] = r._descargas[+b.dataset.i]; descargar(await motor.leer(ruta), nombre); })));
+  $("#cod-descargas [data-json]").onclick = () => descargar(new Blob([JSON.stringify({ reporte: r.reporte, asignaciones: r.asignaciones, unidades_nuevas: r.unidades_nuevas }, null, 1)], { type: "application/json" }), "asignaciones.json");
+  const bv = $("#cod-descargas [data-verificar]");
+  if (bv) bv.onclick = () => { setModelo(r._copia, "Copia codificada"); irA("verificar"); $("#btn-verificar").click(); };
+  const fe = $("#cod-filtro").value, q = $("#cod-buscar").value.trim().toLowerCase();
+  const filas = r.asignaciones.filter((a) => (!fe || a.estado === fe) && (!q || JSON.stringify(a).toLowerCase().includes(q)));
+  $("#cod-filas").innerHTML = filas.map((a) => `<tr><td>${esc(a.hoja)} · ${a.fila}</td><td>${esc(a.id_bd)}</td>
+    <td><span class="estado-fila ${esc(a.estado)}">${a.estado === "ok" ? "Codificada" : "Sin resolver"}</span></td>
+    <td class="mono">${esc(a.ID_ACT_ARQ)}</td><td class="mono">${esc(a.ID_UNI_EX)}</td><td class="mono">${a.ids_modelo.map(esc).join("<br>")}</td>
+    <td style="font-size:12.5px;color:var(--muted)">${a.notas.map(esc).join("<br>")}</td></tr>`).join("") || `<tr><td colspan="7" class="vacio">Sin filas</td></tr>`;
+  $("#cod-unidades").innerHTML = r.unidades_nuevas.map((u) => `<tr><td class="mono">${esc(u.id)}</td><td>${esc(u.tipo)}</td><td>${esc(u.descripcion)}</td></tr>`).join("")
+    || `<tr><td colspan="3" class="vacio">Ninguna: todas las unidades ya existían</td></tr>`;
+}
+
+/* ------------------------------------------------------------ IDs y catálogo */
+$("#btn-analizar").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const r = await servicio("analizar_id", { codigo: $("#id-codigo").value });
+  pintarId($("#id-resultado"), r);
+});
+$("#id-codigo").onkeydown = (e) => { if (e.key === "Enter") $("#btn-analizar").click(); };
+function pintarId(el, r) {
+  const filas = Object.entries(r).filter(([k, v]) => !["codigo", "valido", "errores"].includes(k) && v !== null && v !== "").map(([k, v]) => `<tr><th style="width:130px">${esc(k)}</th><td class="mono">${esc(v)}</td></tr>`).join("");
+  el.innerHTML = (r.valido ? `<div class="ok-caja">Código válido</div>` : `<div class="error-caja">${r.errores.map(esc).join("<br>")}</div>`)
+    + (filas ? `<div class="tabla"><table>${filas}</table></div>` : "");
+}
+$("#sig-tipo").onchange = () => {
+  const t = $("#sig-tipo").value;
+  $("#sig-capa").classList.toggle("oculto", t !== "material");
+  $("#sig-fase").classList.toggle("oculto", !["actividad", "unidad"].includes(t));
+  $("#sig-base").placeholder = { material: "Base: ID_ACT_ARQ (19)", poligono: "Base: registro (8), p. ej. R0125A22" }[t] || "Base: polígono específico (12)";
+};
+$("#btn-siguiente").onclick = (e) => ocupado(e.currentTarget, async () => {
+  const t = $("#sig-tipo").value;
+  const r = await servicio("siguiente_id", { ruta_modelo: estado.modelo, tipo: t, base: $("#sig-base").value, fase: $("#sig-fase").value, capa: t === "material" ? $("#sig-capa").value : null });
+  $("#sig-resultado").innerHTML = `<div class="ok-caja">Siguiente: <b class="mono">${esc(r.siguiente)}</b> · ${r.existentes_con_esa_base} existentes con esa base</div>`;
+});
+async function cargarCatalogo() {
+  if (!estado.listo || cargarCatalogo.hecho) return; cargarCatalogo.hecho = true;
+  try {
+    const r = await servicio("listar_capas", {});
+    $("#cat-capa").innerHTML = r.capas.map((c) => `<option>${esc(c)}</option>`).join("");
+    $("#sig-capa").innerHTML = Object.keys(r.materiales).map((c) => `<option>${esc(c)}</option>`).join("");
+    $("#cat-capa").value = "CERAMICAS"; $("#cat-capa").onchange();
+  } catch (e) { cargarCatalogo.hecho = false; toast(esc(e.message)); }
+}
+$("#cat-capa").onchange = async () => {
+  try {
+    const r = await servicio("campos_capa", { capa: $("#cat-capa").value });
+    $("#cat-campos").innerHTML = `<div class="tabla"><table><thead><tr><th>Campo</th><th>Tipo</th><th class="num">Long.</th><th>Obligación</th></tr></thead><tbody>${r.campos.map((c) => `<tr>
+      <td><span class="mono">${esc(c.campo)}</span>${c.dominio ? ` <span class="chip" role="button" data-dom="${esc(c.campo)}" style="font-size:11.5px;padding:1px 8px">dominio</span>` : ""}<div style="font-size:12px;color:var(--muted)">${esc(c.etiqueta)}</div></td>
+      <td>${esc(c.tipo)}</td><td class="num">${c.longitud ?? ""}</td><td style="font-size:12.5px">${esc(c.obligacion)}</td></tr>
+      <tr class="oculto" data-vals="${esc(c.campo)}"><td colspan="4"></td></tr>`).join("")}</tbody></table></div>`;
+    $$("#cat-campos [data-dom]").forEach((b) => (b.onclick = async () => {
+      const fila = $(`#cat-campos tr[data-vals="${CSS.escape(b.dataset.dom)}"]`);
+      if (!fila.classList.contains("oculto")) { fila.classList.add("oculto"); return; }
+      const d = await servicio("dominio", { capa: $("#cat-capa").value, campo: b.dataset.dom });
+      fila.firstElementChild.innerHTML = `<ul class="valores">${d.valores.map((v) => `<li>${esc(v)}</li>`).join("")}</ul>`;
+      fila.classList.remove("oculto");
+    }));
+  } catch (e) { toast(esc(e.message)); }
+};
+
+/* ------------------------------------------------------------ arranque */
+(async () => {
+  $("#ayuda-motor").textContent = MV.modo === "navegador" ? ", dentro de este navegador: no se envían a ningún servidor" : ", por el servidor Python local (127.0.0.1)";
+  const progreso = (t) => ($("#motor-texto").textContent = t);
+  try {
+    progreso(motor.nombre + " · iniciando…");
+    const t0 = performance.now();
+    const desc = await motor.iniciar(progreso);
+    estado.listo = true;
+    $("#motor-punto").classList.add("listo");
+    progreso(`${motor.nombre} · listo en ${((performance.now() - t0) / 1000).toFixed(1)} s`);
+    $("#motor").title = desc;
+    actualizarBotones();
+  } catch (e) {
+    $("#motor-punto").classList.add("error");
+    progreso(motor.nombre + " · no se pudo iniciar");
+    toast("No se pudo iniciar el motor: " + esc(e.message || e), "error", 20000);
+  }
+})();
+</script>
+</body>
+</html>

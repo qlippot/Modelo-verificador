@@ -105,6 +105,49 @@ Claude Desktop (`claude_desktop_config.json`) u otro cliente con el mismo format
 }
 ```
 
+## WebApp (HTML)
+
+Una sola interfaz (`web/plantilla.html`) con dos motores intercambiables. Ambos ejecutan el mismo código Python
+(`servicios.py`), así que dan los mismos resultados.
+
+- **Local:** un servidor Python en este equipo.
+
+  ```bash
+  PYTHONPATH=. .venv/bin/python -m modelo_verificador web
+  ```
+
+  Abre `http://127.0.0.1:8765/`. Opciones: `--puerto`, `--no-abrir`.
+- **En navegador:** un único `.html` autocontenido que ejecuta el paquete con Pyodide. No necesita instalar nada y se
+  puede compartir como archivo.
+
+  ```bash
+  .venv/bin/python web/construir_navegador.py
+  ```
+
+  Genera `web/dist/modelo-verificador.html` (≈1,3 MB), que se abre con doble clic.
+
+Las pestañas son tres. **Verificar** muestra resultados por nivel y regla, con filtros, búsqueda y exportación a JSON
+y CSV. **Codificar BD** permite ver las columnas, editar y validar la configuración, codificar y descargar la BD
+codificada, el Modelo codificado (.zip) y las asignaciones; luego se puede verificar la copia con un clic. **IDs y
+catálogo** analiza códigos, calcula el siguiente libre y consulta campos y dominios. El botón **Cargar datos de ejemplo**
+usa los datos sintéticos.
+
+| | Local | En navegador |
+|---|---|---|
+| Instalación | Repositorio + Python + dependencias | Ninguna (abrir el .html) |
+| Primer arranque | Inmediato | ≈9 s (descarga Pyodide del CDN; luego queda en caché) |
+| Verificar el ejemplo | ≈0,4 s | ≈1,8 s |
+| CRS / extensión de ortoplanos | Sí (rasterio) | No por ahora (aparece como INFO) |
+| Dónde están los datos | Carpeta temporal local, se borra al salir | Memoria del navegador; nada se sube |
+| Para compartir | Cada persona instala el repositorio | Enviar el archivo |
+
+Protecciones del modo local:
+- Escucha solo en 127.0.0.1, con un token aleatorio por ejecución y un Host local obligatorio.
+- Ninguna ruta puede salir de la carpeta de sesión.
+- Solo se pueden invocar los servicios de una lista cerrada.
+
+En ambos modos, los archivos elegidos nunca se modifican: todo resultado es una copia descargable.
+
 ## Herramienta 1 — Verificar
 
 Cada hallazgo tiene `nivel` (ERROR / AVISO / INFO), `capa`, `regla` y `detalle`. Hay tres módulos:
