@@ -51,6 +51,60 @@ escribir_bd(cod, "BD.xlsx", "BD - codificada.xlsx")
 ids.analizar("R0125A220005PI00001C0001")
 ```
 
+## Servidor MCP
+
+`modelo_verificador/mcp_server.py` expone las dos herramientas y las utilidades como un servidor MCP (stdio, SDK
+oficial `mcp` 2.x). Todo es determinista: el servidor no llama a ningún modelo.
+
+| Herramienta | Qué hace | Escribe |
+|---|---|---|
+| `verificar_modelo` | Verificación completa (formato, coherencia, faltantes) | — |
+| `resumen_modelo` | Capas, actividades (con sus materiales), unidades y rásteres | — |
+| `inspeccionar_bd` | Hojas, encabezados y filas de muestra de una BD .xlsx | — |
+| `ejemplo_config` | Configuración de ejemplo del codificador | — |
+| `validar_config` | Valida una configuración contra la BD y el Modelo, sin codificar | — |
+| `crear_copia_staging` | Copia el Modelo a una carpeta nueva | Carpeta nueva |
+| `codificar_bd` | Asigna códigos; opcionalmente escribe la BD codificada y una copia del Modelo | Solo salidas pedidas |
+| `analizar_id` · `generar_id` · `siguiente_id` | Reglas de IDs del catálogo; siguiente consecutivo libre en un Modelo | — |
+| `listar_capas` · `campos_capa` · `dominio` | Consulta del catálogo V4 | — |
+
+Protecciones:
+- Cada herramienta declara sus anotaciones (solo lectura / destructiva).
+- `codificar_bd` nunca escribe sobre el Modelo leído ni sobre la BD original, y no sobrescribe una salida existente
+  salvo con `sobrescribir_salida=True`.
+- Con la variable `MODELO_VERIFICADOR_RAIZ`, toda ruta fuera de esa carpeta se rechaza.
+- Los errores previstos (ruta inexistente, hoja o columna faltante, configuración inválida) llegan al cliente con su
+  mensaje.
+
+Flujo típico desde un asistente: `inspeccionar_bd` + `resumen_modelo` → escribir la configuración →
+`validar_config` → `crear_copia_staging` → `codificar_bd(escribir_en=…)` → `verificar_modelo` sobre la copia.
+
+### Configurar un cliente
+
+Instalar con el extra `mcp` (`pip install -e ".[raster,mcp]"`). Conviene lanzarlo con `python -m` y `PYTHONPATH`, que
+no depende del `.pth` de la instalación editable (ver la nota de macOS más arriba). Reemplazar `<ruta>` por la carpeta
+del repositorio.
+
+Claude Code:
+
+```bash
+claude mcp add modelo-verificador --env PYTHONPATH=<ruta> -- <ruta>/.venv/bin/python -m modelo_verificador.mcp_server
+```
+
+Claude Desktop (`claude_desktop_config.json`) u otro cliente con el mismo formato (`ejemplos/mcp.ejemplo.json`):
+
+```json
+{
+  "mcpServers": {
+    "modelo-verificador": {
+      "command": "<ruta>/.venv/bin/python",
+      "args": ["-m", "modelo_verificador.mcp_server"],
+      "env": {"PYTHONPATH": "<ruta>", "MODELO_VERIFICADOR_RAIZ": "<carpeta de trabajo>"}
+    }
+  }
+}
+```
+
 ## Herramienta 1 — Verificar
 
 Cada hallazgo tiene `nivel` (ERROR / AVISO / INFO), `capa`, `regla` y `detalle`. Hay tres módulos:

@@ -2,23 +2,13 @@
 import os
 import json
 import shutil
-import importlib.util
 
 import pytest
 
 from modelo_verificador.verificar import verificar_todo
 from modelo_verificador.codificar import codificar, escribir_bd, escribir_modelo
 from modelo_verificador.texto import bytes_utf8
-
-DS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos_sinteticos")
-_sp = importlib.util.spec_from_file_location("generar", os.path.join(DS, "generar.py"))
-GEN = importlib.util.module_from_spec(_sp)
-_sp.loader.exec_module(GEN)
-
-
-@pytest.fixture(scope="module")
-def datos(tmp_path_factory):
-    return GEN.construir_todo(str(tmp_path_factory.mktemp("sinteticos")))
+from conftest import GEN, DS
 
 
 def _hallazgos(res):

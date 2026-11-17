@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "modelo-verificador": {
+      "command": "<ruta>/.venv/bin/python",
+      "args": ["-m", "modelo_verificador.mcp_server"],
+      "env": {
+        "PYTHONPATH": "<ruta>",
+        "MODELO_VERIFICADOR_RAIZ": "<carpeta de trabajo con los Modelos y las BD>"
+      }
+    }
+  }
+}
