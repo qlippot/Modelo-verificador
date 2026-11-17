@@ -1,0 +1,34 @@
+{
+  "_comentario": "Resultado esperado de codificar bd_materiales.xlsx con config.json contra modelo_minimo/ (escrito a mano). Unidades existentes NP0001–NP0007; las nuevas se numeran desde NP0008 en orden de aparición.",
+  "filas": {
+    "CE-001": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00001", "ID_UNI_EX": "R0000A000001NP0001", "ids": ["R0000A000001PI00001C0001"], "prof": [5, 10], "_caso": "patrón «corte N»; unidad existente por etiqueta PI00001-E1; profundidad de la BD"},
+    "CE-002": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00001", "ID_UNI_EX": "R0000A000001NP0002", "ids": ["R0000A000001PI00001C0002"], "prof": [30, 60], "_caso": "mayúsculas/espacios dobles; estrato en minúscula; profundidad tomada de la unidad; Conjunto; FORMA mapeada"},
+    "CE-003": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00002", "ID_UNI_EX": "R0000A000001NP0008", "ids": ["R0000A000001PI00002C0001"], "prof": [70, 70], "_caso": "estrato nuevo → unidad nueva; profundidad de un solo valor"},
+    "CE-004": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00003", "ID_UNI_EX": "R0000A000001NP0005", "ids": ["R0000A000001PI00003C0001"], "prof": [12, 18], "_caso": "correspondencia exacta; OBSERVACI larga con tildes → truncada a 254 bytes"},
+    "CE-005": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00005", "ID_UNI_EX": "R0000A000001NP0007", "ids": ["R0000A000001PI00005C0001"], "prof": [0, 0], "_caso": "estrato RS → unidad Superficie existente"},
+    "CE-006": {"estado": "sin_resolver", "_caso": "«Trinchera 7» sin correspondencia en la configuración"},
+    "CE-007": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00005", "ID_UNI_EX": "R0000A000001NP0009", "ids": ["R0000A000001PI00005C0002"], "prof": [0, 0], "_caso": "sin actividad → por_defecto; sin estrato → SE; sin profundidad → 0-0"},
+    "CE-008": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00004", "ID_UNI_EX": "R0000A000001NP0010", "ids": ["R0000A000001PI00004C0001"], "prof": [40, 50], "_caso": "actividad Negativo que recibe material → aparece en actividades_a_positivo"},
+    "CE-010": {"estado": "sin_resolver", "_caso": "patrón resuelve PI00009, que no existe en el Modelo"},
+    "ME-001": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00001", "ID_UNI_EX": "R0000A000001NP0002", "ids": ["R0000A000001PI00001M0001"], "prof": [35, 40], "_caso": "coordenadas de la BD"},
+    "ME-002": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00003", "ID_UNI_EX": "R0000A000001NP0006", "ids": ["R0000A000001PI00003M0001"], "prof": [40, 120], "_caso": "sin profundidad en BD → de la unidad; «BUENO» mapeado a Bueno"},
+    "ME-003": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00003", "ID_UNI_EX": "R0000A000001NP0011", "ids": ["R0000A000001PI00003M0002"], "prof": [200, 210], "_caso": "consecutivo por actividad continúa (M0002)"},
+    "OS-001": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00002", "ID_UNI_EX": "R0000A000001NP0004", "ids": ["R0000A000001PI00002OA0001"], "prof": [30, 40], "_caso": "prefijo de dos letras (OA)"},
+    "OS-002": {"estado": "ok", "ID_ACT_ARQ": "R0000A000001PI00002", "ID_UNI_EX": "R0000A000001NP0004", "ids": ["R0000A000001PI00002OA0002"], "prof": [25, 60], "_caso": "lateralidad vacía → defecto; Conjunto"}
+  },
+  "campos": {
+    "CE-002": {"UNID_CONJU": "Conjunto", "CANT_CONJU": 3, "FORMA": "Plato"},
+    "CE-004": {"FORMA": "Olla", "_OBSERVACI_bytes_max": 254},
+    "ME-002": {"EST_CONSER": "Bueno"},
+    "ME-003": {"EST_CONSER": "Malo", "TIPO": "Aleación", "COMPOSICIO": "Bronce"},
+    "OS-001": {"LATERALIDA": "Izquierda", "ESP_CONJU": "Espécimen", "ESPECIE": "Bos taurus"},
+    "OS-002": {"LATERALIDA": "Sin identificar", "ESP_CONJU": "Conjunto", "ESPECIE": "Sin identificar"}
+  },
+  "reporte": {
+    "filas": {"ok": 12, "sin_resolver": 2},
+    "unidades_nuevas": 4,
+    "actividades_a_positivo": ["R0000A000001PI00004"],
+    "capas": {"CERAMICAS": 7, "METALES": 3, "OSEOS ANIMALES": 2},
+    "truncados": {"CERAMICAS.OBSERVACI": 1}
+  }
+}

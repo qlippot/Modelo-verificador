@@ -1,0 +1,64 @@
+{
+  "_comentario": "Hallazgos que debe producir la verificación de modelo_con_errores/, por mutación (ver MUTACIONES en generar.py). La prueba exige que el conjunto de ERRORES sea exactamente este, y que cada AVISO listado aparezca.",
+  "mutaciones": {
+    "id_material_mal_formado": [
+      ["formato", "ERROR", "CERAMICAS", "ID_CERAMIC: ID_CERAMIC debe ser ID_ACT_ARQ (19) + «C» + consecutivo de 4 dígitos"],
+      ["formato", "ERROR", "CERAMICAS", "ID_CERAMIC: longitud 23 ≠ 24"]
+    ],
+    "fuera_de_dominio_metales": [
+      ["formato", "ERROR", "METALES", "Fuera de dominio: COMPOSICIO"]
+    ],
+    "fuera_de_dominio_zonificacion": [
+      ["formato", "ERROR", "ZONIFICACION ARQUEOLOGICA", "Fuera de dominio: POTENCIAL"]
+    ],
+    "punto_fuera_de_actividad": [
+      ["formato", "AVISO", "CERAMICAS", "Punto fuera del polígono de su actividad"],
+      ["coherencia", "AVISO", "CERAMICAS", "Punto fuera de su actividad"]
+    ],
+    "unidad_inexistente": [
+      ["formato", "ERROR", "CERAMICAS", "ID_UNI_EX inexistente en la tabla UNIDAD MÍNIMA"],
+      ["coherencia", "ERROR", "CERAMICAS", "ID_UNI_EX inexistente"],
+      ["coherencia", "AVISO", "UNIDAD MINIMA", "Unidad sin uso (sin materiales ni ortoplano)"]
+    ],
+    "id_duplicado": [
+      ["formato", "ERROR", "OSEOS ANIMALES", "ID duplicado"],
+      ["coherencia", "ERROR", "MATERIALES", "ID duplicado"]
+    ],
+    "profundidad_invertida": [
+      ["formato", "ERROR", "METALES", "PROFUN_INI > PROFUN_FIN"]
+    ],
+    "fecha_ini_mayor_que_fin": [
+      ["coherencia", "ERROR", "ACTIVIDADES ARQUEOLOGICAS", "FECHA_INI > FECHA_FIN"]
+    ],
+    "fecha_siglo_errado": [
+      ["formato", "AVISO", "ACTIVIDADES ARQUEOLOGICAS", "FECHA_INI anterior a 2000 (¿error de siglo?)"]
+    ],
+    "actividad_fuera_de_poligonos": [
+      ["coherencia", "ERROR", "ACTIVIDADES ARQUEOLOGICAS", "Actividad fuera de su polígono específico"],
+      ["coherencia", "ERROR", "ACTIVIDADES ARQUEOLOGICAS", "Actividad fuera del polígono general"]
+    ],
+    "ancho_con_cero_de_mas": [
+      ["coherencia", "AVISO", "ACTIVIDADES ARQUEOLOGICAS", "ANCHO_CM/LARGO_CM no corresponden a la geometría"]
+    ],
+    "negativo_con_materiales": [
+      ["coherencia", "ERROR", "ACTIVIDADES ARQUEOLOGICAS", "MAT_ARQUEO Negativo con registros"]
+    ],
+    "estructura_fuera_de_actividad": [
+      ["coherencia", "AVISO", "ESTRUCTURAS", "Estructura fuera de su actividad"]
+    ],
+    "unidad_sin_descripcion": [
+      ["formato", "ERROR", "UNIDAD MINIMA", "DESCRIPCIÓN obligatoria vacía"]
+    ],
+    "ortoplano_faltante": [
+      ["coherencia", "ERROR", "RASTER", "Ortoplano faltante (Corte/Cuadrícula/Trinchera con materiales)"],
+      ["faltantes", "AVISO", "RASTER", "Ningún ortoplano nombrado con una unidad que tenga materiales"]
+    ],
+    "raster_nombre_invalido": [
+      ["coherencia", "ERROR", "RASTER", "Nombre de ortoplano inválido (esperado <ID_ACT_ARQ>_<ID_UNI_EX>.tif)"]
+    ],
+    "metadato_sin_diligenciar": [
+      ["faltantes", "ERROR", "METADATO", "Sin diligenciar · hoja «CERÁMICAS»"]
+    ],
+    "carpetas_sin_tilde": []
+  }
+}

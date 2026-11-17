@@ -1,0 +1,171 @@
+{
+  "_comentario": "Configuración del codificador para bd_materiales.xlsx (datos sintéticos).",
+  "modo": "reemplazar",
+  "sin_profundidad": [
+    0,
+    0
+  ],
+  "actividades": {
+    "exactas": {
+      "Trinchera 1": "R0000A000001PI00003",
+      "Recolección superficial": "R0000A000001PI00005"
+    },
+    "patrones": [
+      {
+        "regex": "^corte\\s*(\\d+)$",
+        "id": "R0000A000001PI{1:05d}"
+      },
+      {
+        "regex": "^pozo\\s*(\\d+)$",
+        "id": "R0000A000001PI{1:05d}"
+      }
+    ],
+    "por_defecto": "R0000A000001PI00005"
+  },
+  "unidades": {
+    "superficie": [
+      "RS"
+    ],
+    "sin_estrato": "SE",
+    "tipo": "Unidad estratigráfica",
+    "fijas": {}
+  },
+  "hojas": {
+    "Cerámica": {
+      "capa": "CERAMICAS",
+      "id_bd": "Código",
+      "actividad": "Actividad",
+      "estrato": "Estrato",
+      "profundidad": {
+        "rango": "Prof (cm)"
+      },
+      "campos": {
+        "INTEGRIDAD": "Integridad",
+        "UNID_CONJU": {
+          "segun_cantidad": "Cantidad"
+        },
+        "CANT_CONJU": {
+          "columna": "Cantidad",
+          "defecto": 1
+        },
+        "FORMA": {
+          "columna": "Forma",
+          "mapa": {
+            "plato": "Plato",
+            "olla": "Olla"
+          }
+        },
+        "TIPO_CERAM": {
+          "columna": "Tipo",
+          "defecto": "Sin identificar"
+        },
+        "NOMBRE_PER": {
+          "valor": "Sin identificar"
+        },
+        "OBSERVACI": {
+          "concatenar": [
+            [
+              "",
+              "Observaciones"
+            ],
+            [
+              "BD",
+              "Código"
+            ]
+          ]
+        }
+      }
+    },
+    "Metales": {
+      "capa": "METALES",
+      "id_bd": "ID",
+      "actividad": "Actividad",
+      "estrato": "Estrato",
+      "profundidad": {
+        "ini": "Prof. inicial",
+        "fin": "Prof. final"
+      },
+      "coordenadas": {
+        "x": "Este",
+        "y": "Norte"
+      },
+      "campos": {
+        "TIPO": "Tipo",
+        "COMPOSICIO": "Composición",
+        "TIPO_OBJEC": "Objeto",
+        "EST_CONSER": {
+          "columna": "Conservación",
+          "mapa": {
+            "bueno": "Bueno",
+            "regular": "Regular",
+            "malo": "Malo"
+          },
+          "defecto": "Sin identificar"
+        },
+        "OBSERVACI": {
+          "concatenar": [
+            [
+              "BD",
+              "ID"
+            ]
+          ]
+        }
+      }
+    },
+    "Óseos": {
+      "capa": "OSEOS ANIMALES",
+      "id_bd": "ID",
+      "actividad": "Actividad",
+      "estrato": "Estrato",
+      "profundidad": {
+        "rango": "Profundidad"
+      },
+      "campos": {
+        "ESP_CONJU": {
+          "segun_cantidad": "Cantidad",
+          "uno": "Espécimen",
+          "varios": "Conjunto"
+        },
+        "IDENTIFICA": "Elemento",
+        "LATERALIDA": {
+          "columna": "Lado",
+          "mapa": {
+            "izq": "Izquierda",
+            "der": "Derecha"
+          },
+          "defecto": "Sin identificar"
+        },
+        "CLASE": {
+          "valor": "Sin identificar"
+        },
+        "ORDEN": {
+          "valor": "Sin identificar"
+        },
+        "FAMILIA": {
+          "valor": "Sin identificar"
+        },
+        "GENERO": {
+          "valor": "Sin identificar"
+        },
+        "ESPECIE": {
+          "columna": "Especie",
+          "defecto": "Sin identificar"
+        },
+        "SEXO": {
+          "valor": "Indeterminado"
+        },
+        "COMPLETI": {
+          "valor": "Fragmentado"
+        },
+        "OBSERVACI": {
+          "concatenar": [
+            [
+              "BD",
+              "ID"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

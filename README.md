@@ -18,6 +18,13 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[raster,dev]"
 
 `rasterio` es opcional: sin él no se revisa el CRS ni la extensión de los ortoplanos.
 
+En macOS, si el comando `modelo-verificador` responde `No module named 'modelo_verificador'`, es porque el archivo `.pth`
+de la instalación editable quedó oculto, y Python 3.13+ ignora los `.pth` ocultos. Se corrige con:
+
+```bash
+chflags nohidden .venv/lib/python3.*/site-packages/*.pth
+```
+
 ## Uso (CLI)
 
 ```bash
@@ -99,7 +106,9 @@ T, V, OB, OBC, OA, H, IH, EM, MA, A) con sus longitudes.
 
 ## Datos
 
-Este repositorio no contiene datos de proyectos. Las pruebas usan datos sintéticos (`datos_sinteticos/`, por construir).
+Este repositorio no contiene datos de proyectos. Las pruebas usan los datos sintéticos de `datos_sinteticos/`:
+un Modelo correcto, otro con un error sembrado por regla, y una BD de materiales con su configuración y los
+resultados esperados. Ver `datos_sinteticos/README.md`.
 
 ```bash
 .venv/bin/pytest

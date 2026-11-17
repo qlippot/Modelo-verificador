@@ -99,7 +99,9 @@ def verificar(modelo, umbral_vacios=0.5):
                     entrega = str(val).strip().upper() if val else None
                 if "OBLIGACI" in txt.upper() and (val in (None, "") or str(val).startswith("Diligenciar")
                                                     or rutas.norm(val) == "OBLIGACION"):
-                    nombre = next((str(v) for v in vals[1:4] if v and not str(v).upper().startswith("OBLIG")), "?")
+                    num_ = next((str(v) for v in vals[:2] if v is not None), "")
+                    nombre = next((str(v).strip() for v in vals[2:4] if v and not str(v).upper().startswith("OBLIG")), "?")
+                    nombre = f"{num_} {nombre}".strip()
                     pend.append(f"fila {row[0].row}: {nombre[:60]}")
             if entrega == "NO":
                 marcadas_no.append(ws.title.strip())
