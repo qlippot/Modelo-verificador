@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+~$*.xlsx
+salidas/
+# Nunca versionar datos reales de proyectos: solo datos sintéticos en datos_sinteticos/
+*.real.*

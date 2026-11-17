@@ -1,0 +1,60 @@
+{
+  "_comentario": "Ejemplo con datos ficticios. Las claves que empiezan por _ se ignoran. Los IDs usan el registro ficticio R0000A00.",
+  "modo": "reemplazar",
+  "sin_profundidad": [0, 0],
+  "fila_encabezado": 1,
+
+  "actividades": {
+    "_ayuda": "exactas: etiqueta de la BD (sin distinguir mayúsculas/espacios) → ID_ACT_ARQ. patrones: regex sobre la etiqueta; {1}, {2}… son los grupos (los dígitos se convierten a entero). por_defecto: para filas sin actividad.",
+    "exactas": {
+      "Corte 1": "R0000A000001PI00001",
+      "Corte 2": "R0000A000001PI00002",
+      "Recolección superficial": "R0000A000001PI00010"
+    },
+    "patrones": [
+      {"regex": "^trinchera\\s*(\\d+)$", "id": "R0000A000001PI{1:05d}"}
+    ],
+    "por_defecto": null
+  },
+
+  "unidades": {
+    "_ayuda": "Estratos en «superficie» crean unidades TIPO Superficie (0-0). «fijas» fuerza una unidad: «<ID_ACT>|<ESTRATO>» o «<etiqueta BD>|<estrato>» → ID_UNI_EX.",
+    "superficie": ["RS", "SUPERFICIE"],
+    "sin_estrato": "SE",
+    "tipo": "Unidad estratigráfica",
+    "fijas": {}
+  },
+
+  "hojas": {
+    "Cerámicas": {
+      "capa": "CERAMICAS",
+      "id_bd": "ID Elemento",
+      "actividad": "Actividad",
+      "estrato": "Estrato",
+      "profundidad": {"rango": "Profundidad CM"},
+      "campos": {
+        "INTEGRIDAD": "Integridad",
+        "UNID_CONJU": {"segun_cantidad": "Cantidad", "uno": "Unidad", "varios": "Conjunto"},
+        "CANT_CONJU": {"columna": "Cantidad", "defecto": 1},
+        "TIPO_CERAM": {"columna": "Tipología", "defecto": "Sin identificar"},
+        "NOMBRE_PER": {"valor": "Sin identificar"},
+        "OBSERVACI": {"concatenar": [["", "Observaciones"], ["BD", "ID Elemento"]]}
+      }
+    },
+    "Metales": {
+      "capa": "METALES",
+      "id_bd": "ID",
+      "actividad": "Actividad",
+      "estrato": "Estrato",
+      "profundidad": {"ini": "Prof. inicial", "fin": "Prof. final"},
+      "coordenadas": {"x": "Este", "y": "Norte"},
+      "campos": {
+        "TIPO": "Tipo",
+        "COMPOSICIO": "Composición",
+        "TIPO_OBJEC": "Objeto",
+        "EST_CONSER": {"columna": "Conservación", "mapa": {"bueno": "Bueno", "regular": "Regular", "malo": "Malo"}, "defecto": "Sin identificar"},
+        "OBSERVACI": {"concatenar": [["BD", "ID"]]}
+      }
+    }
+  }
+}
