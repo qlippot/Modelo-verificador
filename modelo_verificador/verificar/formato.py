@@ -92,6 +92,9 @@ def verificar(modelo, catalogo=None):
                 vs = "" if v is None else str(v).strip()
                 if a.obligatorio and vs == "":
                     inf.error(nombre, f"Obligatorio vacío: {fld}", f"fila {i}")
+                elif vs == "" and "posterior" in a.obligacion.lower():
+                    # exigido desde el Diagnóstico; la verificación por fase lo omite en el Registro
+                    inf.error(nombre, f"Obligatorio después del Registro: {fld}", f"fila {i}")
                 if a.con_dominio and vs and a.codigo in cat.dominios and vs not in cat.dominios[a.codigo]:
                     inf.error(nombre, f"Fuera de dominio: {fld}", vs)
             for fld, n in largos.items():
@@ -136,8 +139,9 @@ def verificar(modelo, catalogo=None):
                 if fi and hasattr(fi, "year") and fi.year < 2000:
                     inf.aviso(nombre, "FECHA_INI anterior a 2000 (¿error de siglo?)", f"{ida} {fi}")
             if nombre == "POLIGONOS ESPECIFICOS":
-                ids_vistos[d.get("ID_POL_ESP")] += 1
-                if not _ids.es_valido(d.get("ID_POL_ESP"), "poligono"):
+                if d.get("ID_POL_ESP"):
+                    ids_vistos[d["ID_POL_ESP"]] += 1
+                if d.get("ID_POL_ESP") and not _ids.es_valido(d.get("ID_POL_ESP"), "poligono"):
                     inf.error(nombre, "ID_POL_ESP: formato / longitud 12", d.get("ID_POL_ESP"))
             if nombre == "ZONIFICACION ARQUEOLOGICA":
                 ids_vistos[d.get("ID_ZON_ARQ")] += 1

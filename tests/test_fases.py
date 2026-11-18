@@ -45,3 +45,44 @@ def test_normalizar():
     with pytest.raises(ValueError):
         normalizar("otra")
     assert explicar("Fuera de dominio: FASE")
+
+
+# ---------------------------------------------------------------- un Modelo correcto por fase
+FASES = ("registro", "diagnostico", "implementacion")
+
+
+def no_info(r):
+    return sorted((g["nivel"], g["capa"], g["regla"]) for g in r["grupos"] if g["nivel"] != "INFO")
+
+
+@pytest.mark.parametrize("fase", FASES)
+def test_modelo_de_la_fase_sin_errores_ni_avisos(datos, fase):
+    """Cada Modelo sintético, verificado en su propia fase, no produce ningún hallazgo adicional."""
+    r = verificar_todo(f"{datos}/modelo_fase_{fase}", fase=fase)
+    assert no_info(r) == [], no_info(r)
+    assert r["apto"]
+
+
+@pytest.mark.parametrize("modelo", FASES)
+@pytest.mark.parametrize("fase", FASES)
+def test_fase_cruzada_avisa_que_no_corresponde(datos, modelo, fase):
+    if modelo == fase:
+        return
+    r = verificar_todo(f"{datos}/modelo_fase_{modelo}", fase=fase)
+    assert "FASE del polígono no corresponde a la fase elegida" in reglas(r, "fase")
+
+
+def test_registro_no_exige_campos_posteriores(datos):
+    """REGIS_AUTO e ID_POL_ESP vacíos: válidos en Registro, error en cualquier fase posterior o sin fase."""
+    m = f"{datos}/modelo_fase_registro"
+    post = {"Obligatorio después del Registro: REGIS_AUTO", "Obligatorio después del Registro: ID_POL_ESP"}
+    assert not post & reglas(verificar_todo(m, fase="registro"))
+    for fase in (None, "diagnostico", "implementacion"):
+        assert post <= reglas(verificar_todo(m, fase=fase)), fase
+
+
+def test_implementacion_exige_pma(datos):
+    r = verificar_todo(f"{datos}/modelo_fase_diagnostico", fase="implementacion")
+    assert {"Implementación sin PMA aprobado: FECHA_PMA vacío",
+            "Implementación sin PMA aprobado: CODIGO_PMA vacío"} <= reglas(r, "fase")
+    assert not r["apto"]

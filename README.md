@@ -179,7 +179,8 @@ los hallazgos agrupados por regla, ordenados por gravedad y con una explicación
 - **faltantes** (`verificar/faltantes.py`): ortoplanos requeridos, obligatorios y condicionales de actividades, unidades
   sin descripción o profundidad, campos de materiales mayormente vacíos, y filas del Metadato sin diligenciar.
 - **fase** (`verificar/fase.py`, con `fase=`): según el catálogo (hojas TEMAS / GRUPOS, dominio Dom_FASE).
-  *Registro* revisa solo la Zona de Estudio; los campos «posterior a la Fase de Registro» aún no se exigen.
+  *Registro* revisa solo la Zona de Estudio; los campos «posterior a la Fase de Registro» (que `formato` exige como
+  «Obligatorio después del Registro») aún no se exigen.
   *Diagnóstico* exige esos campos y la Zonificación, y avisa de actividades con código PI. *Implementación* revisa todo
   y exige FECHA_PMA y CODIGO_PMA. En todas, avisa si el campo FASE de los polígonos no corresponde a la fase elegida.
 

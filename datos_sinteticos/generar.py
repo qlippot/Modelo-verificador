@@ -160,6 +160,98 @@ MUTACIONES = {
 }
 
 
+# ============================================================== un Modelo correcto por fase del PAP
+def _act_di(n):
+    return f"{PE}DI{n:05d}"
+
+
+def _uni_nd(n):
+    return f"{PE}ND{n:04d}"
+
+
+def datos_diagnostico_capas():
+    """Actividades, unidades y materiales de la fase de Diagnóstico y prospección (códigos DI / ND)."""
+    #       n  tipo                       x    y    w    h   prof une  mat         fechas
+    acts = [(1, "Pozo de sondeo", 20, 120, .5, .5, 80, 2, "Positivo", (D(2024, 6, 3), D(2024, 6, 3))),
+            (2, "Pozo de sondeo", 60, 120, .5, .5, 60, 1, "Negativo", (D(2024, 6, 4), D(2024, 6, 4))),
+            (3, "Pozo de sondeo", 100, 120, .5, .5, 70, 1, "Positivo", (D(2024, 6, 5), D(2024, 6, 5))),
+            (4, "Recolección superficial", 140, 100, 10, 10, 0, 1, "Positivo", (D(2024, 6, 6), D(2024, 6, 6))),
+            (5, "Pozo de sondeo", 160, 170, .5, .5, 60, 1, "Negativo", (D(2024, 6, 7), D(2024, 6, 7)))]
+    A = [dict(geom=rect(x, y, w, h), ID_ACT_ARQ=_act_di(n), ID_POL_ESP=PE, RNA_ARQ_L=1, RNA_ARQ=1, FECHA_INI=f[0],
+              FECHA_FIN=f[1], TIPO_ACT=t, CORTE=None, ALTITUD=2600, ANCHO_CM=round(min(w, h) * 100),
+              LARGO_CM=round(max(w, h) * 100), PROFUN_MAX=p, NMERO_UNE=u, MAT_ARQUEO=m, _rect=(x, y, w, h))
+         for n, t, x, y, w, h, p, u, m, f in acts]
+    U = [(_uni_nd(1), "Unidad estratigráfica", "DI00001-E1: Horizonte orgánico pardo. Profundidad: 0 - 30 cm."),
+         (_uni_nd(2), "Unidad estratigráfica", "DI00001-E2: Limo arcilloso amarillo. Profundidad: 30 - 80 cm."),
+         (_uni_nd(3), "Unidad estratigráfica", "DI00003-E1: Relleno con carbón. Profundidad: 0 - 70 cm."),
+         (_uni_nd(4), "Superficie", "DI00004-RS: Recolección de materiales en superficie. Profundidad: 0 - 0 cm.")]
+
+    def p(n, dx, dy):
+        x, y, *_ = next(a["_rect"] for a in A if a["ID_ACT_ARQ"] == _act_di(n))
+        return (X0 + x + dx, Y0 + y + dy)
+
+    cer = dict(INTEGRIDAD="Fragmento", UNID_CONJU="Unidad", FORMA="", CANT_CONJU=1, TIPO_CERAM="Loza fina",
+               NOMBRE_PER="Sin identificar", OBSERVACI="Registro sintético de diagnóstico")
+    return {
+        "ACTIVIDADES ARQUEOLOGICAS": A,
+        "UNIDADES": U,
+        "CERAMICAS": [
+            dict(cer, geom=p(1, .2, .2), ID_CERAMIC=_act_di(1) + "C0001", ID_ACT_ARQ=_act_di(1), ID_UNI_EX=_uni_nd(1),
+                 PROFUN_INI=10, PROFUN_FIN=20),
+            dict(cer, geom=p(1, .3, .3), ID_CERAMIC=_act_di(1) + "C0002", ID_ACT_ARQ=_act_di(1), ID_UNI_EX=_uni_nd(2),
+                 PROFUN_INI=40, PROFUN_FIN=50, TIPO_CERAM="Mayólica"),
+            dict(cer, geom=p(4, 4, 4), ID_CERAMIC=_act_di(4) + "C0001", ID_ACT_ARQ=_act_di(4), ID_UNI_EX=_uni_nd(4),
+                 PROFUN_INI=0, PROFUN_FIN=0),
+        ],
+        "METALES": [dict(geom=p(3, .25, .25), ID_METALES=_act_di(3) + "M0001", ID_ACT_ARQ=_act_di(3), ID_UNI_EX=_uni_nd(3),
+                         TIPO="Metal", COMPOSICIO="Hierro", TIPO_OBJEC="Clavo", EST_CONSER="Malo",
+                         OBSERVACI="Registro sintético de diagnóstico", PROFUN_INI=20, PROFUN_FIN=30)],
+        "OSEOS ANIMALES": [],
+        "VIDRIOS": [dict(geom=p(4, 6, 6), ID_VIDRIOS=_act_di(4) + "V0001", ID_ACT_ARQ=_act_di(4), ID_UNI_EX=_uni_nd(4),
+                         UNID_CONJU="Unidad", FORMA="Botella cerveza", MET_PRODUC="Automático", TECNICA="Automático",
+                         COLOR="Ámbar", TIPO_OBJEC="Botella", OBSERVACI="Registro sintético de diagnóstico",
+                         PROFUN_INI=0, PROFUN_FIN=0)],
+        "ESTRUCTURAS": [],
+    }
+
+
+MATERIALES = ["CERAMICAS", "METALES", "OSEOS ANIMALES", "VIDRIOS", "ESTRUCTURAS"]
+
+
+def datos_fase(fase):
+    """Modelo correcto para una fase: 'registro', 'diagnostico' o 'implementacion'.
+
+    registro        Solo la Zona de Estudio, FASE «Registro», sin PMA. REGIS_AUTO e ID_POL_ESP vacíos
+                    (el catálogo los exige solo después del Registro).
+    diagnostico     Zona de Estudio + Zonificación + pozos de sondeo y recolección (DI / ND), FASE
+                    «Diagnóstico y prospección», sin PMA ni ortoplanos (no hay cortes ni trincheras).
+    implementacion  El Modelo mínimo (PI / NP) más las actividades DI de la fase anterior, con PMA aprobado.
+    """
+    d = datos_base()
+    pg, pe = d["POLIGONO GENERAL"][0], d["POLIGONOS ESPECIFICOS"][0]
+    if fase == "implementacion":
+        di = datos_diagnostico_capas()
+        for k, v in di.items():
+            d[k] = v + d[k]
+        return d
+    pe.update(FECHA_PMA=None, CODIGO_PMA=None)
+    if fase == "diagnostico":
+        pe.update(FASE="Diagnóstico y prospección")
+        d.update(datos_diagnostico_capas())
+        d["RASTER"] = []
+        return d
+    if fase == "registro":
+        pe.update(FASE="Registro", REGIS_AUTO=None, ID_POL_ESP=None)
+        pg.update(REGIS_AUTO=None)
+        for k in ["ZONIFICACION ARQUEOLOGICA", "ACTIVIDADES ARQUEOLOGICAS", "UNIDADES", "RASTER"] + MATERIALES:
+            d[k] = []
+        return d
+    raise ValueError(fase)
+
+
+FASES_SINTETICAS = ("registro", "diagnostico", "implementacion")
+
+
 # ============================================================== escritura
 def _escribir_capa(raiz, capa, filas):
     base = rutas.buscar_capa(raiz, capa)
@@ -177,7 +269,7 @@ def _escribir_capa(raiz, capa, filas):
             w.point(*g)
         else:
             w.poly([g])
-        w.record(*[fila.get(f[0]) for f in campos])
+        w.record(*[("" if f[1] == "C" else None) if fila.get(f[0]) is None else fila.get(f[0]) for f in campos])
     w.close()
 
 
@@ -395,6 +487,8 @@ def construir_todo(carpeta=AQUI):
     import json
     construir_minimo(os.path.join(carpeta, "modelo_minimo"))
     construir_errores(os.path.join(carpeta, "modelo_con_errores"))
+    for fase in FASES_SINTETICAS:
+        construir(os.path.join(carpeta, f"modelo_fase_{fase}"), datos_fase(fase))
     construir_bd(os.path.join(carpeta, "bd_materiales.xlsx"))
     with open(os.path.join(carpeta, "config.json"), "w", encoding="utf-8") as f:
         json.dump(CONFIG, f, ensure_ascii=False, indent=2)

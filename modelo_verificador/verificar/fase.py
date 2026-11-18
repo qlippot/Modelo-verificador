@@ -10,9 +10,10 @@ El catálogo ICANH organiza el Modelo por fases (hoja TEMAS / GRUPOS y dominio D
   CODIGO_PMA). Actividades y unidades con código PI / NP (pueden convivir las DI de la fase anterior).
 
 `filtrar` quita los hallazgos de capas que no corresponden a la fase; `verificar` añade las reglas propias
-de la fase (campos exigidos, FASE de los polígonos y fase codificada en los IDs).
+de la fase (FASE de los polígonos, capas de la fase, fase codificada en los IDs y PMA aprobado).
+Los campos «posterior a la Fase de Registro» los revisa `formato` y aquí se omiten en el Registro.
 """
-from .. import catalogo as _cat, rutas
+from .. import rutas
 from ..modelo import Modelo
 from .informe import Informe
 
@@ -49,6 +50,8 @@ def corresponde(h, fase):
     """¿El hallazgo h aplica a la fase? (solo Registro recorta capas)."""
     if fase != "registro":
         return True
+    if h["regla"].startswith("Obligatorio después del Registro"):
+        return False
     capa = rutas.norm(h["capa"])
     if capa in ZONA_ESTUDIO or capa == "-":
         return True
@@ -67,7 +70,6 @@ def verificar(modelo, fase):
     M = modelo if isinstance(modelo, Modelo) else Modelo(modelo)
     inf = Informe("fase")
     F = FASES[fase]
-    cat = _cat.cargar()
     inf.datos = dict(fase=fase, nombre=F["nombre"], descripcion=F["descripcion"])
 
     # 1. Zona de estudio: FASE declarada en cada polígono específico
@@ -83,14 +85,6 @@ def verificar(modelo, fase):
 
     if fase == "registro":
         return inf
-
-    # 2. después del Registro: los campos «posterior a la Fase de Registro» pasan a ser obligatorios
-    for capa in sorted(ZONA_ESTUDIO):
-        posteriores = [a.nombre for a in cat.capa(capa).values() if "posterior" in a.obligacion.lower()]
-        for i, (r, _) in enumerate(M.registros(capa), start=1):
-            for f in posteriores:
-                if f in r and str(r.get(f) or "").strip() == "":
-                    inf.error(capa, f"Obligatorio después del Registro: {f}", f"fila {i}")
 
     # 3. capas que la fase debe entregar
     presentes = set(M.capas_presentes())

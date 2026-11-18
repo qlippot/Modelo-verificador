@@ -12,6 +12,7 @@ Se regeneran de forma determinista con:
 | Archivo | Contenido |
 |---|---|
 | `modelo_minimo/` | Modelo V4 completo y correcto, hecho sobre las plantillas oficiales. Pasa la verificación con **0 ERRORES y 0 AVISOS** |
+| `modelo_fase_registro/`, `modelo_fase_diagnostico/`, `modelo_fase_implementacion/` | Un Modelo correcto por fase del PAP. Verificado **en su fase**, cada uno da **0 ERRORES y 0 AVISOS** |
 | `modelo_con_errores/` | El mismo Modelo con **un error sembrado por regla** y carpetas sin tildes, como en muchos Modelos reales |
 | `esperado_errores.json` | Hallazgos que debe producir `modelo_con_errores/`, agrupados por mutación |
 | `bd_materiales.xlsx` | Base de datos de materiales (hojas Cerámica, Metales y Óseos) con casos difíciles |
@@ -39,6 +40,22 @@ Se regeneran de forma determinista con:
   Todos están dentro de su actividad y usan valores de dominio del catálogo.
 - Tres ortoplanos GeoTIFF en EPSG:9377 (`<ID_ACT>_<ID_UNI>.tif`), uno por cada Corte o Trinchera con materiales.
 - Metadato diligenciado: capas entregadas = SI, con sus conteos; capas no entregadas = NO. Contacto ficticio.
+
+## Modelos por fase
+
+Se construyen con `datos_fase(fase)` a partir del Modelo mínimo:
+
+| Modelo | Contenido | FASE del polígono | PMA |
+|---|---|---|---|
+| `modelo_fase_registro` | Solo la Zona de Estudio (polígono general y específico). REGIS_AUTO e ID_POL_ESP **vacíos**, porque el catálogo los exige solo después del Registro | Registro | — |
+| `modelo_fase_diagnostico` | Zona de Estudio, Zonificación y 5 actividades `DI00001`–`DI00005` (4 pozos de sondeo y 1 recolección superficial) con 4 unidades `ND0001`–`ND0004`, 3 cerámicas, 1 metal y 1 vidrio. No tiene ortoplanos porque no hay cortes ni trincheras | Diagnóstico y prospección | — |
+| `modelo_fase_implementacion` | El Modelo mínimo (`PI` / `NP`) más las actividades `DI` de la fase anterior | Implementación de PMA | Fecha y código |
+
+Las pruebas (`tests/test_fases.py`) comprueban tres cosas:
+
+- Cada Modelo, verificado en su propia fase, no da ningún ERROR ni AVISO.
+- Verificado en otra fase, da el aviso «FASE del polígono no corresponde».
+- El Modelo de Registro da error por los campos posteriores al Registro si se verifica sin fase o en una fase posterior.
 
 ## modelo_con_errores: mutaciones
 
